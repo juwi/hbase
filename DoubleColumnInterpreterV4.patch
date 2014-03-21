@@ -1,0 +1,1410 @@
+diff --git hbase-client/src/main/java/org/apache/hadoop/hbase/client/coprocessor/DoubleColumnInterpreter.java hbase-client/src/main/java/org/apache/hadoop/hbase/client/coprocessor/DoubleColumnInterpreter.java
+new file mode 100644
+index 0000000..f74e142
+--- /dev/null
++++ hbase-client/src/main/java/org/apache/hadoop/hbase/client/coprocessor/DoubleColumnInterpreter.java
+@@ -0,0 +1,138 @@
++/*
++ *
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.hadoop.hbase.client.coprocessor;
++
++import java.io.IOException;
++
++import org.apache.hadoop.classification.InterfaceAudience;
++import org.apache.hadoop.classification.InterfaceStability;
++import org.apache.hadoop.hbase.KeyValue;
++import org.apache.hadoop.hbase.coprocessor.ColumnInterpreter;
++import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.EmptyMsg;
++import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg;
++import org.apache.hadoop.hbase.util.Bytes;
++
++/**
++ * a concrete column interpreter implementation. The cell value is a Double value
++ * and its promoted data type is also a Double value. For computing aggregation
++ * function, this class is used to find the datatype of the cell value. Client
++ * is supposed to instantiate it and passed along as a parameter. See
++ * TestDoubleColumnInterpreter methods for its sample usage.
++ * Its methods handle null arguments gracefully. 
++ */
++@InterfaceAudience.Public
++@InterfaceStability.Evolving
++public class DoubleColumnInterpreter extends ColumnInterpreter<Double, Double, 
++      EmptyMsg, DoubleMsg, DoubleMsg>{
++ 
++  public Double getValue(byte[] colFamily, byte[] colQualifier, KeyValue kv)
++      throws IOException {
++    if (kv == null || kv.getValueLength() != Bytes.SIZEOF_DOUBLE)
++      return null;
++    return Bytes.toDouble(kv.getValueArray(), kv.getValueOffset());
++  }
++
++  @Override
++  public Double add(Double d1, Double d2) {
++    if (d1 == null ^ d2 == null) {
++      return (d1 == null) ? d2 : d1; // either of one is null.
++    } 
++    if (d1 == null) {// both are null
++      return null;
++    }
++    return d1 + d2;
++  }
++
++  @Override
++  public int compare(final Double d1, final Double d2) {
++    if (d1 == null ^ d2 == null) {
++      return d1 == null ? -1 : 1; // either of one is null.
++    } else if (d1 == null)
++      return 0; // both are null
++    return d1.compareTo(d2); // natural ordering.
++  }
++
++  @Override
++  public Double getMaxValue() {
++    return Double.MAX_VALUE;
++  }
++
++  @Override
++  public Double increment(Double o) {
++    return o == null ? null : (o + 1.00d);
++  }
++
++  @Override
++  public Double multiply(Double d1, Double d2) {
++    return (d1 == null || d2 == null) ? null : d1 * d2;
++  }
++
++  @Override
++  public Double getMinValue() {
++    return Double.MIN_VALUE;
++  }
++
++  @Override
++  public double divideForAvg(Double d1, Long l2) {
++    return (l2 == null || d1 == null) ? Double.NaN : (d1.doubleValue() / l2
++        .doubleValue());
++  }
++
++  @Override
++  public Double castToReturnType(Double o) {
++    return o;
++  }
++
++  @Override
++  public Double castToCellType(Double d) {
++    return d;
++  }
++
++  @Override
++  public EmptyMsg getRequestData() {
++    return EmptyMsg.getDefaultInstance();
++  }
++
++  @Override
++  public void initialize(EmptyMsg msg) {
++    //nothing 
++  }
++
++  @Override
++  public DoubleMsg getProtoForCellType(Double t) {
++    DoubleMsg.Builder builder = DoubleMsg.newBuilder();
++    return builder.setDoubleMsg(t).build();
++  }
++
++  @Override
++  public DoubleMsg getProtoForPromotedType(Double s) {
++    DoubleMsg.Builder builder = DoubleMsg.newBuilder();
++    return builder.setDoubleMsg(s).build();
++  }
++
++  @Override
++  public Double getPromotedValueFromProto(DoubleMsg r) {
++    return r.getDoubleMsg();
++  }
++
++  @Override
++  public Double getCellValueFromProto(DoubleMsg q) {
++    return q.getDoubleMsg();
++  }
++}
+diff --git hbase-protocol/src/main/java/org/apache/hadoop/hbase/protobuf/generated/HBaseProtos.java hbase-protocol/src/main/java/org/apache/hadoop/hbase/protobuf/generated/HBaseProtos.java
+index 7acf1d3..238db31 100644
+--- hbase-protocol/src/main/java/org/apache/hadoop/hbase/protobuf/generated/HBaseProtos.java
++++ hbase-protocol/src/main/java/org/apache/hadoop/hbase/protobuf/generated/HBaseProtos.java
+@@ -13401,6 +13401,448 @@ public final class HBaseProtos {
+     // @@protoc_insertion_point(class_scope:LongMsg)
+   }
+ 
++  public interface DoubleMsgOrBuilder
++      extends com.google.protobuf.MessageOrBuilder {
++
++    // required double double_msg = 1;
++    /**
++     * <code>required double double_msg = 1;</code>
++     */
++    boolean hasDoubleMsg();
++    /**
++     * <code>required double double_msg = 1;</code>
++     */
++    double getDoubleMsg();
++  }
++  /**
++   * Protobuf type {@code DoubleMsg}
++   */
++  public static final class DoubleMsg extends
++      com.google.protobuf.GeneratedMessage
++      implements DoubleMsgOrBuilder {
++    // Use DoubleMsg.newBuilder() to construct.
++    private DoubleMsg(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
++      super(builder);
++      this.unknownFields = builder.getUnknownFields();
++    }
++    private DoubleMsg(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
++
++    private static final DoubleMsg defaultInstance;
++    public static DoubleMsg getDefaultInstance() {
++      return defaultInstance;
++    }
++
++    public DoubleMsg getDefaultInstanceForType() {
++      return defaultInstance;
++    }
++
++    private final com.google.protobuf.UnknownFieldSet unknownFields;
++    @java.lang.Override
++    public final com.google.protobuf.UnknownFieldSet
++        getUnknownFields() {
++      return this.unknownFields;
++    }
++    private DoubleMsg(
++        com.google.protobuf.CodedInputStream input,
++        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
++        throws com.google.protobuf.InvalidProtocolBufferException {
++      initFields();
++      int mutable_bitField0_ = 0;
++      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
++          com.google.protobuf.UnknownFieldSet.newBuilder();
++      try {
++        boolean done = false;
++        while (!done) {
++          int tag = input.readTag();
++          switch (tag) {
++            case 0:
++              done = true;
++              break;
++            default: {
++              if (!parseUnknownField(input, unknownFields,
++                                     extensionRegistry, tag)) {
++                done = true;
++              }
++              break;
++            }
++            case 9: {
++              bitField0_ |= 0x00000001;
++              doubleMsg_ = input.readDouble();
++              break;
++            }
++          }
++        }
++      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
++        throw e.setUnfinishedMessage(this);
++      } catch (java.io.IOException e) {
++        throw new com.google.protobuf.InvalidProtocolBufferException(
++            e.getMessage()).setUnfinishedMessage(this);
++      } finally {
++        this.unknownFields = unknownFields.build();
++        makeExtensionsImmutable();
++      }
++    }
++    public static final com.google.protobuf.Descriptors.Descriptor
++        getDescriptor() {
++      return org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.internal_static_DoubleMsg_descriptor;
++    }
++
++    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
++        internalGetFieldAccessorTable() {
++      return org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.internal_static_DoubleMsg_fieldAccessorTable
++          .ensureFieldAccessorsInitialized(
++              org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg.class, org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg.Builder.class);
++    }
++
++    public static com.google.protobuf.Parser<DoubleMsg> PARSER =
++        new com.google.protobuf.AbstractParser<DoubleMsg>() {
++      public DoubleMsg parsePartialFrom(
++          com.google.protobuf.CodedInputStream input,
++          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
++          throws com.google.protobuf.InvalidProtocolBufferException {
++        return new DoubleMsg(input, extensionRegistry);
++      }
++    };
++
++    @java.lang.Override
++    public com.google.protobuf.Parser<DoubleMsg> getParserForType() {
++      return PARSER;
++    }
++
++    private int bitField0_;
++    // required double double_msg = 1;
++    public static final int DOUBLE_MSG_FIELD_NUMBER = 1;
++    private double doubleMsg_;
++    /**
++     * <code>required double double_msg = 1;</code>
++     */
++    public boolean hasDoubleMsg() {
++      return ((bitField0_ & 0x00000001) == 0x00000001);
++    }
++    /**
++     * <code>required double double_msg = 1;</code>
++     */
++    public double getDoubleMsg() {
++      return doubleMsg_;
++    }
++
++    private void initFields() {
++      doubleMsg_ = 0D;
++    }
++    private byte memoizedIsInitialized = -1;
++    public final boolean isInitialized() {
++      byte isInitialized = memoizedIsInitialized;
++      if (isInitialized != -1) return isInitialized == 1;
++
++      if (!hasDoubleMsg()) {
++        memoizedIsInitialized = 0;
++        return false;
++      }
++      memoizedIsInitialized = 1;
++      return true;
++    }
++
++    public void writeTo(com.google.protobuf.CodedOutputStream output)
++                        throws java.io.IOException {
++      getSerializedSize();
++      if (((bitField0_ & 0x00000001) == 0x00000001)) {
++        output.writeDouble(1, doubleMsg_);
++      }
++      getUnknownFields().writeTo(output);
++    }
++
++    private int memoizedSerializedSize = -1;
++    public int getSerializedSize() {
++      int size = memoizedSerializedSize;
++      if (size != -1) return size;
++
++      size = 0;
++      if (((bitField0_ & 0x00000001) == 0x00000001)) {
++        size += com.google.protobuf.CodedOutputStream
++          .computeDoubleSize(1, doubleMsg_);
++      }
++      size += getUnknownFields().getSerializedSize();
++      memoizedSerializedSize = size;
++      return size;
++    }
++
++    private static final long serialVersionUID = 0L;
++    @java.lang.Override
++    protected java.lang.Object writeReplace()
++        throws java.io.ObjectStreamException {
++      return super.writeReplace();
++    }
++
++    @java.lang.Override
++    public boolean equals(final java.lang.Object obj) {
++      if (obj == this) {
++       return true;
++      }
++      if (!(obj instanceof org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg)) {
++        return super.equals(obj);
++      }
++      org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg other = (org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg) obj;
++
++      boolean result = true;
++      result = result && (hasDoubleMsg() == other.hasDoubleMsg());
++      if (hasDoubleMsg()) {
++        result = result && (Double.doubleToLongBits(getDoubleMsg())    == Double.doubleToLongBits(other.getDoubleMsg()));
++      }
++      result = result &&
++          getUnknownFields().equals(other.getUnknownFields());
++      return result;
++    }
++
++    private int memoizedHashCode = 0;
++    @java.lang.Override
++    public int hashCode() {
++      if (memoizedHashCode != 0) {
++        return memoizedHashCode;
++      }
++      int hash = 41;
++      hash = (19 * hash) + getDescriptorForType().hashCode();
++      if (hasDoubleMsg()) {
++        hash = (37 * hash) + DOUBLE_MSG_FIELD_NUMBER;
++        hash = (53 * hash) + hashLong(
++            Double.doubleToLongBits(getDoubleMsg()));
++      }
++      hash = (29 * hash) + getUnknownFields().hashCode();
++      memoizedHashCode = hash;
++      return hash;
++    }
++
++    public static org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parseFrom(
++        com.google.protobuf.ByteString data)
++        throws com.google.protobuf.InvalidProtocolBufferException {
++      return PARSER.parseFrom(data);
++    }
++    public static org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parseFrom(
++        com.google.protobuf.ByteString data,
++        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
++        throws com.google.protobuf.InvalidProtocolBufferException {
++      return PARSER.parseFrom(data, extensionRegistry);
++    }
++    public static org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parseFrom(byte[] data)
++        throws com.google.protobuf.InvalidProtocolBufferException {
++      return PARSER.parseFrom(data);
++    }
++    public static org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parseFrom(
++        byte[] data,
++        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
++        throws com.google.protobuf.InvalidProtocolBufferException {
++      return PARSER.parseFrom(data, extensionRegistry);
++    }
++    public static org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parseFrom(java.io.InputStream input)
++        throws java.io.IOException {
++      return PARSER.parseFrom(input);
++    }
++    public static org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parseFrom(
++        java.io.InputStream input,
++        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
++        throws java.io.IOException {
++      return PARSER.parseFrom(input, extensionRegistry);
++    }
++    public static org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parseDelimitedFrom(java.io.InputStream input)
++        throws java.io.IOException {
++      return PARSER.parseDelimitedFrom(input);
++    }
++    public static org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parseDelimitedFrom(
++        java.io.InputStream input,
++        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
++        throws java.io.IOException {
++      return PARSER.parseDelimitedFrom(input, extensionRegistry);
++    }
++    public static org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parseFrom(
++        com.google.protobuf.CodedInputStream input)
++        throws java.io.IOException {
++      return PARSER.parseFrom(input);
++    }
++    public static org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parseFrom(
++        com.google.protobuf.CodedInputStream input,
++        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
++        throws java.io.IOException {
++      return PARSER.parseFrom(input, extensionRegistry);
++    }
++
++    public static Builder newBuilder() { return Builder.create(); }
++    public Builder newBuilderForType() { return newBuilder(); }
++    public static Builder newBuilder(org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg prototype) {
++      return newBuilder().mergeFrom(prototype);
++    }
++    public Builder toBuilder() { return newBuilder(this); }
++
++    @java.lang.Override
++    protected Builder newBuilderForType(
++        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
++      Builder builder = new Builder(parent);
++      return builder;
++    }
++    /**
++     * Protobuf type {@code DoubleMsg}
++     */
++    public static final class Builder extends
++        com.google.protobuf.GeneratedMessage.Builder<Builder>
++       implements org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsgOrBuilder {
++      public static final com.google.protobuf.Descriptors.Descriptor
++          getDescriptor() {
++        return org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.internal_static_DoubleMsg_descriptor;
++      }
++
++      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
++          internalGetFieldAccessorTable() {
++        return org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.internal_static_DoubleMsg_fieldAccessorTable
++            .ensureFieldAccessorsInitialized(
++                org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg.class, org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg.Builder.class);
++      }
++
++      // Construct using org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg.newBuilder()
++      private Builder() {
++        maybeForceBuilderInitialization();
++      }
++
++      private Builder(
++          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
++        super(parent);
++        maybeForceBuilderInitialization();
++      }
++      private void maybeForceBuilderInitialization() {
++        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
++        }
++      }
++      private static Builder create() {
++        return new Builder();
++      }
++
++      public Builder clear() {
++        super.clear();
++        doubleMsg_ = 0D;
++        bitField0_ = (bitField0_ & ~0x00000001);
++        return this;
++      }
++
++      public Builder clone() {
++        return create().mergeFrom(buildPartial());
++      }
++
++      public com.google.protobuf.Descriptors.Descriptor
++          getDescriptorForType() {
++        return org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.internal_static_DoubleMsg_descriptor;
++      }
++
++      public org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg getDefaultInstanceForType() {
++        return org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg.getDefaultInstance();
++      }
++
++      public org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg build() {
++        org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg result = buildPartial();
++        if (!result.isInitialized()) {
++          throw newUninitializedMessageException(result);
++        }
++        return result;
++      }
++
++      public org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg buildPartial() {
++        org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg result = new org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg(this);
++        int from_bitField0_ = bitField0_;
++        int to_bitField0_ = 0;
++        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
++          to_bitField0_ |= 0x00000001;
++        }
++        result.doubleMsg_ = doubleMsg_;
++        result.bitField0_ = to_bitField0_;
++        onBuilt();
++        return result;
++      }
++
++      public Builder mergeFrom(com.google.protobuf.Message other) {
++        if (other instanceof org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg) {
++          return mergeFrom((org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg)other);
++        } else {
++          super.mergeFrom(other);
++          return this;
++        }
++      }
++
++      public Builder mergeFrom(org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg other) {
++        if (other == org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg.getDefaultInstance()) return this;
++        if (other.hasDoubleMsg()) {
++          setDoubleMsg(other.getDoubleMsg());
++        }
++        this.mergeUnknownFields(other.getUnknownFields());
++        return this;
++      }
++
++      public final boolean isInitialized() {
++        if (!hasDoubleMsg()) {
++          
++          return false;
++        }
++        return true;
++      }
++
++      public Builder mergeFrom(
++          com.google.protobuf.CodedInputStream input,
++          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
++          throws java.io.IOException {
++        org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg parsedMessage = null;
++        try {
++          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
++        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
++          parsedMessage = (org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg) e.getUnfinishedMessage();
++          throw e;
++        } finally {
++          if (parsedMessage != null) {
++            mergeFrom(parsedMessage);
++          }
++        }
++        return this;
++      }
++      private int bitField0_;
++
++      // required double double_msg = 1;
++      private double doubleMsg_ ;
++      /**
++       * <code>required double double_msg = 1;</code>
++       */
++      public boolean hasDoubleMsg() {
++        return ((bitField0_ & 0x00000001) == 0x00000001);
++      }
++      /**
++       * <code>required double double_msg = 1;</code>
++       */
++      public double getDoubleMsg() {
++        return doubleMsg_;
++      }
++      /**
++       * <code>required double double_msg = 1;</code>
++       */
++      public Builder setDoubleMsg(double value) {
++        bitField0_ |= 0x00000001;
++        doubleMsg_ = value;
++        onChanged();
++        return this;
++      }
++      /**
++       * <code>required double double_msg = 1;</code>
++       */
++      public Builder clearDoubleMsg() {
++        bitField0_ = (bitField0_ & ~0x00000001);
++        doubleMsg_ = 0D;
++        onChanged();
++        return this;
++      }
++
++      // @@protoc_insertion_point(builder_scope:DoubleMsg)
++    }
++
++    static {
++      defaultInstance = new DoubleMsg(true);
++      defaultInstance.initFields();
++    }
++
++    // @@protoc_insertion_point(class_scope:DoubleMsg)
++  }
++
+   public interface BigDecimalMsgOrBuilder
+       extends com.google.protobuf.MessageOrBuilder {
+ 
+@@ -15741,6 +16183,11 @@ public final class HBaseProtos {
+     com.google.protobuf.GeneratedMessage.FieldAccessorTable
+       internal_static_LongMsg_fieldAccessorTable;
+   private static com.google.protobuf.Descriptors.Descriptor
++    internal_static_DoubleMsg_descriptor;
++  private static
++    com.google.protobuf.GeneratedMessage.FieldAccessorTable
++      internal_static_DoubleMsg_fieldAccessorTable;
++  private static com.google.protobuf.Descriptors.Descriptor
+     internal_static_BigDecimalMsg_descriptor;
+   private static
+     com.google.protobuf.GeneratedMessage.FieldAccessorTable
+@@ -15803,16 +16250,17 @@ public final class HBaseProtos {
+       "\022\020\n\010instance\030\002 \001(\t\022\030\n\rcreation_time\030\003 \001(" +
+       "\003:\0010\022&\n\rconfiguration\030\004 \003(\0132\017.NameString" +
+       "Pair\"\n\n\010EmptyMsg\"\033\n\007LongMsg\022\020\n\010long_msg\030" +
+-      "\001 \002(\003\"\'\n\rBigDecimalMsg\022\026\n\016bigdecimal_msg" +
+-      "\030\001 \002(\014\"5\n\004UUID\022\026\n\016least_sig_bits\030\001 \002(\004\022\025" +
+-      "\n\rmost_sig_bits\030\002 \002(\004\"K\n\023NamespaceDescri" +
+-      "ptor\022\014\n\004name\030\001 \002(\014\022&\n\rconfiguration\030\002 \003(" +
+-      "\0132\017.NameStringPair\"$\n\020RegionServerInfo\022\020" +
+-      "\n\010infoPort\030\001 \001(\005*r\n\013CompareType\022\010\n\004LESS\020",
+-      "\000\022\021\n\rLESS_OR_EQUAL\020\001\022\t\n\005EQUAL\020\002\022\r\n\tNOT_E" +
+-      "QUAL\020\003\022\024\n\020GREATER_OR_EQUAL\020\004\022\013\n\007GREATER\020" +
+-      "\005\022\t\n\005NO_OP\020\006B>\n*org.apache.hadoop.hbase." +
+-      "protobuf.generatedB\013HBaseProtosH\001\240\001\001"
++      "\001 \002(\003\"\037\n\tDoubleMsg\022\022\n\ndouble_msg\030\001 \002(\001\"\'" +
++      "\n\rBigDecimalMsg\022\026\n\016bigdecimal_msg\030\001 \002(\014\"" +
++      "5\n\004UUID\022\026\n\016least_sig_bits\030\001 \002(\004\022\025\n\rmost_" +
++      "sig_bits\030\002 \002(\004\"K\n\023NamespaceDescriptor\022\014\n" +
++      "\004name\030\001 \002(\014\022&\n\rconfiguration\030\002 \003(\0132\017.Nam" +
++      "eStringPair\"$\n\020RegionServerInfo\022\020\n\010infoP",
++      "ort\030\001 \001(\005*r\n\013CompareType\022\010\n\004LESS\020\000\022\021\n\rLE" +
++      "SS_OR_EQUAL\020\001\022\t\n\005EQUAL\020\002\022\r\n\tNOT_EQUAL\020\003\022" +
++      "\024\n\020GREATER_OR_EQUAL\020\004\022\013\n\007GREATER\020\005\022\t\n\005NO" +
++      "_OP\020\006B>\n*org.apache.hadoop.hbase.protobu" +
++      "f.generatedB\013HBaseProtosH\001\240\001\001"
+     };
+     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
+       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
+@@ -15921,26 +16369,32 @@ public final class HBaseProtos {
+             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+               internal_static_LongMsg_descriptor,
+               new java.lang.String[] { "LongMsg", });
+-          internal_static_BigDecimalMsg_descriptor =
++          internal_static_DoubleMsg_descriptor =
+             getDescriptor().getMessageTypes().get(17);
++          internal_static_DoubleMsg_fieldAccessorTable = new
++            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
++              internal_static_DoubleMsg_descriptor,
++              new java.lang.String[] { "DoubleMsg", });
++          internal_static_BigDecimalMsg_descriptor =
++            getDescriptor().getMessageTypes().get(18);
+           internal_static_BigDecimalMsg_fieldAccessorTable = new
+             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+               internal_static_BigDecimalMsg_descriptor,
+               new java.lang.String[] { "BigdecimalMsg", });
+           internal_static_UUID_descriptor =
+-            getDescriptor().getMessageTypes().get(18);
++            getDescriptor().getMessageTypes().get(19);
+           internal_static_UUID_fieldAccessorTable = new
+             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+               internal_static_UUID_descriptor,
+               new java.lang.String[] { "LeastSigBits", "MostSigBits", });
+           internal_static_NamespaceDescriptor_descriptor =
+-            getDescriptor().getMessageTypes().get(19);
++            getDescriptor().getMessageTypes().get(20);
+           internal_static_NamespaceDescriptor_fieldAccessorTable = new
+             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+               internal_static_NamespaceDescriptor_descriptor,
+               new java.lang.String[] { "Name", "Configuration", });
+           internal_static_RegionServerInfo_descriptor =
+-            getDescriptor().getMessageTypes().get(20);
++            getDescriptor().getMessageTypes().get(21);
+           internal_static_RegionServerInfo_fieldAccessorTable = new
+             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+               internal_static_RegionServerInfo_descriptor,
+diff --git hbase-protocol/src/main/protobuf/HBase.proto hbase-protocol/src/main/protobuf/HBase.proto
+index a966c40..5622735 100644
+--- hbase-protocol/src/main/protobuf/HBase.proto
++++ hbase-protocol/src/main/protobuf/HBase.proto
+@@ -179,7 +179,10 @@ message EmptyMsg {
+ 
+ message LongMsg {
+   required int64 long_msg = 1;
++}
+ 
++message DoubleMsg {
++  required double double_msg = 1;
+ }
+ 
+ message BigDecimalMsg {
+diff --git hbase-server/src/test/java/org/apache/hadoop/hbase/coprocessor/TestDoubleColumnInterpreter.java hbase-server/src/test/java/org/apache/hadoop/hbase/coprocessor/TestDoubleColumnInterpreter.java
+new file mode 100644
+index 0000000..6fec206
+--- /dev/null
++++ hbase-server/src/test/java/org/apache/hadoop/hbase/coprocessor/TestDoubleColumnInterpreter.java
+@@ -0,0 +1,715 @@
++/*
++ *
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.hadoop.hbase.coprocessor;
++
++import static org.junit.Assert.assertEquals;
++
++import org.apache.commons.logging.Log;
++import org.apache.commons.logging.LogFactory;
++import org.apache.hadoop.conf.Configuration;
++import org.apache.hadoop.hbase.HBaseTestingUtility;
++import org.apache.hadoop.hbase.HConstants;
++import org.apache.hadoop.hbase.MediumTests;
++import org.apache.hadoop.hbase.TableName;
++import org.apache.hadoop.hbase.client.Durability;
++import org.apache.hadoop.hbase.client.HTable;
++import org.apache.hadoop.hbase.client.Put;
++import org.apache.hadoop.hbase.client.Scan;
++import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
++import org.apache.hadoop.hbase.client.coprocessor.DoubleColumnInterpreter;
++import org.apache.hadoop.hbase.filter.Filter;
++import org.apache.hadoop.hbase.filter.PrefixFilter;
++import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg;
++import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.EmptyMsg;
++import org.apache.hadoop.hbase.util.Bytes;
++import org.junit.AfterClass;
++import org.junit.BeforeClass;
++import org.junit.Test;
++import org.junit.experimental.categories.Category;
++
++/**
++ * A test class to test DoubleColumnInterpreter for AggregateProtocol
++ */
++@Category(MediumTests.class)
++public class TestDoubleColumnInterpreter {
++  protected static Log myLog = LogFactory.getLog(TestDoubleColumnInterpreter.class);
++
++  /**
++   * Creating the test infrastructure.
++   */
++  private static final TableName TEST_TABLE = TableName.valueOf("TestTable");
++  private static final byte[] TEST_FAMILY = Bytes.toBytes("TestFamily");
++  private static final byte[] TEST_QUALIFIER = Bytes.toBytes("TestQualifier");
++  private static final byte[] TEST_MULTI_CQ = Bytes.toBytes("TestMultiCQ");
++
++  private static byte[] ROW = Bytes.toBytes("testRow");
++  private static final int ROWSIZE = 20;
++  private static final int rowSeperator1 = 5;
++  private static final int rowSeperator2 = 12;
++  private static byte[][] ROWS = makeN(ROW, ROWSIZE);
++
++  private static HBaseTestingUtility util = new HBaseTestingUtility();
++  private static Configuration conf = util.getConfiguration();
++
++  /**
++   * A set up method to start the test cluster. AggregateProtocolImpl is registered and will be
++   * loaded during region startup.
++   * @throws Exception
++   */
++  @BeforeClass
++  public static void setupBeforeClass() throws Exception {
++
++    conf.set(CoprocessorHost.REGION_COPROCESSOR_CONF_KEY,
++      "org.apache.hadoop.hbase.coprocessor.AggregateImplementation");
++
++    util.startMiniCluster(2);
++    HTable table = util.createTable(TEST_TABLE, TEST_FAMILY);
++    util.createMultiRegions(util.getConfiguration(), table, TEST_FAMILY, new byte[][] {
++        HConstants.EMPTY_BYTE_ARRAY, ROWS[rowSeperator1], ROWS[rowSeperator2] });
++    /**
++     * The testtable has one CQ which is always populated and one variable CQ for each row rowkey1:
++     * CF:CQ CF:CQ1 rowKey2: CF:CQ CF:CQ2
++     */
++    for (int i = 0; i < ROWSIZE; i++) {
++      Put put = new Put(ROWS[i]);
++      put.setDurability(Durability.SKIP_WAL);
++      Double d = new Double(i);
++      put.add(TEST_FAMILY, TEST_QUALIFIER, Bytes.toBytes(d));
++      table.put(put);
++      Put p2 = new Put(ROWS[i]);
++      put.setDurability(Durability.SKIP_WAL);
++      p2.add(TEST_FAMILY, Bytes.add(TEST_MULTI_CQ, Bytes.toBytes(d)), Bytes.toBytes(d * 0.10));
++      table.put(p2);
++    }
++    table.close();
++  }
++
++  /**
++   * Shutting down the cluster
++   * @throws Exception
++   */
++  @AfterClass
++  public static void tearDownAfterClass() throws Exception {
++    util.shutdownMiniCluster();
++  }
++
++  /**
++   * an infrastructure method to prepare rows for the testtable.
++   * @param base
++   * @param n
++   * @return
++   */
++  private static byte[][] makeN(byte[] base, int n) {
++    byte[][] ret = new byte[n][];
++    for (int i = 0; i < n; i++) {
++      ret[i] = Bytes.add(base, Bytes.toBytes(i));
++    }
++    return ret;
++  }
++
++  /**
++   * ****************** Test cases for Median **********************
++   */
++  /**
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testMedianWithValidRange() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double median = aClient.median(TEST_TABLE, ci, scan);
++    assertEquals(8.00, median, 0.00);
++  }
++
++  /**
++   * ***************Test cases for Maximum *******************
++   */
++
++  /**
++   * give max for the entire table.
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testMaxWithValidRange() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double maximum = aClient.max(TEST_TABLE, ci, scan);
++    assertEquals(19.00, maximum, 0.00);
++  }
++
++  /**
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testMaxWithValidRange2() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    scan.setStartRow(ROWS[5]);
++    scan.setStopRow(ROWS[15]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double max = aClient.max(TEST_TABLE, ci, scan);
++    assertEquals(14.00, max, 0.00);
++  }
++
++  @Test(timeout = 300000)
++  public void testMaxWithValidRangeWithNoCQ() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double maximum = aClient.max(TEST_TABLE, ci, scan);
++    assertEquals(19.00, maximum, 0.00);
++  }
++
++  @Test(timeout = 300000)
++  public void testMaxWithValidRange2WithNoCQ() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setStartRow(ROWS[6]);
++    scan.setStopRow(ROWS[7]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double max = aClient.max(TEST_TABLE, ci, scan);
++    assertEquals(6.00, max, 0.00);
++  }
++
++  @Test(timeout = 300000)
++  public void testMaxWithValidRangeWithNullCF() {
++    AggregationClient aClient = new AggregationClient(conf);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Scan scan = new Scan();
++    Double max = null;
++    try {
++      max = aClient.max(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++      max = null;
++    }
++    assertEquals(null, max);// CP will throw an IOException about the
++    // null column family, and max will be set to 0
++  }
++
++  @Test(timeout = 300000)
++  public void testMaxWithInvalidRange() {
++    AggregationClient aClient = new AggregationClient(conf);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Scan scan = new Scan();
++    scan.setStartRow(ROWS[4]);
++    scan.setStopRow(ROWS[2]);
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    double max = Double.MIN_VALUE;
++    ;
++    try {
++      max = aClient.max(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++      max = 0.00;
++    }
++    assertEquals(0.00, max, 0.00);// control should go to the catch block
++  }
++
++  @Test(timeout = 300000)
++  public void testMaxWithInvalidRange2() throws Throwable {
++    double max = Double.MIN_VALUE;
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    scan.setStartRow(ROWS[4]);
++    scan.setStopRow(ROWS[4]);
++    try {
++      AggregationClient aClient = new AggregationClient(conf);
++      final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++          new DoubleColumnInterpreter();
++      max = aClient.max(TEST_TABLE, ci, scan);
++    } catch (Exception e) {
++      max = 0.00;
++    }
++    assertEquals(0.00, max, 0.00);// control should go to the catch block
++  }
++
++  @Test(timeout = 300000)
++  public void testMaxWithFilter() throws Throwable {
++    Double max = 0.00d;
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    Filter f = new PrefixFilter(Bytes.toBytes("foo:bar"));
++    scan.setFilter(f);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    max = aClient.max(TEST_TABLE, ci, scan);
++    assertEquals(null, max);
++  }
++
++  /**
++   * **************************Test cases for Minimum ***********************
++   */
++
++  /**
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testMinWithValidRange() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    scan.setStartRow(HConstants.EMPTY_START_ROW);
++    scan.setStopRow(HConstants.EMPTY_END_ROW);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double min = aClient.min(TEST_TABLE, ci, scan);
++    assertEquals(0.00, min, 0.00);
++  }
++
++  /**
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testMinWithValidRange2() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    scan.setStartRow(ROWS[5]);
++    scan.setStopRow(ROWS[15]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double min = aClient.min(TEST_TABLE, ci, scan);
++    assertEquals(5.00, min, 0.00);
++  }
++
++  @Test(timeout = 300000)
++  public void testMinWithValidRangeWithNoCQ() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setStartRow(HConstants.EMPTY_START_ROW);
++    scan.setStopRow(HConstants.EMPTY_END_ROW);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double min = aClient.min(TEST_TABLE, ci, scan);
++    assertEquals(0.00, min, 0.00);
++  }
++
++  @Test(timeout = 300000)
++  public void testMinWithValidRange2WithNoCQ() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setStartRow(ROWS[6]);
++    scan.setStopRow(ROWS[7]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double min = aClient.min(TEST_TABLE, ci, scan);
++    assertEquals(0.60, min, 0.001);
++  }
++
++  @Test(timeout = 300000)
++  public void testMinWithValidRangeWithNullCF() {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.setStartRow(ROWS[5]);
++    scan.setStopRow(ROWS[15]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double min = null;
++    try {
++      min = aClient.min(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++      min = null;
++    }
++    assertEquals(null, min);// CP will throw an IOException about the
++    // null column family, and min will be set to 0
++  }
++
++  @Test(timeout = 300000)
++  public void testMinWithInvalidRange() {
++    AggregationClient aClient = new AggregationClient(conf);
++    Double min = null;
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setStartRow(ROWS[4]);
++    scan.setStopRow(ROWS[2]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    try {
++      min = aClient.min(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++    }
++    assertEquals(null, min);// control should go to the catch block
++  }
++
++  @Test(timeout = 300000)
++  public void testMinWithInvalidRange2() {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setStartRow(ROWS[6]);
++    scan.setStopRow(ROWS[6]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double min = null;
++    try {
++      min = aClient.min(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++    }
++    assertEquals(null, min);// control should go to the catch block
++  }
++
++  @Test(timeout = 300000)
++  public void testMinWithFilter() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    Filter f = new PrefixFilter(Bytes.toBytes("foo:bar"));
++    scan.setFilter(f);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double min = null;
++    min = aClient.min(TEST_TABLE, ci, scan);
++    assertEquals(null, min);
++  }
++
++  /**
++   * *************** Test cases for Sum *********************
++   */
++  /**
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testSumWithValidRange() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double sum = aClient.sum(TEST_TABLE, ci, scan);
++    assertEquals(190.00, sum, 0.00);
++  }
++
++  /**
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testSumWithValidRange2() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    scan.setStartRow(ROWS[5]);
++    scan.setStopRow(ROWS[15]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double sum = aClient.sum(TEST_TABLE, ci, scan);
++    assertEquals(95.00, sum, 0.00);
++  }
++
++  @Test(timeout = 300000)
++  public void testSumWithValidRangeWithNoCQ() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double sum = aClient.sum(TEST_TABLE, ci, scan);
++    assertEquals(209.00, sum, 0.00); // 190 + 19
++  }
++
++  @Test(timeout = 300000)
++  public void testSumWithValidRange2WithNoCQ() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setStartRow(ROWS[6]);
++    scan.setStopRow(ROWS[7]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double sum = aClient.sum(TEST_TABLE, ci, scan);
++    assertEquals(6.60, sum, 0.00); // 6 + 60
++  }
++
++  @Test(timeout = 300000)
++  public void testSumWithValidRangeWithNullCF() {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.setStartRow(ROWS[6]);
++    scan.setStopRow(ROWS[7]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double sum = null;
++    try {
++      sum = aClient.sum(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++    }
++    assertEquals(null, sum);// CP will throw an IOException about the
++    // null column family, and max will be set to 0
++  }
++
++  @Test(timeout = 300000)
++  public void testSumWithInvalidRange() {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setStartRow(ROWS[6]);
++    scan.setStopRow(ROWS[2]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double sum = null;
++    try {
++      sum = aClient.sum(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++    }
++    assertEquals(null, sum);// control should go to the catch block
++  }
++
++  @Test(timeout = 300000)
++  public void testSumWithFilter() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Filter f = new PrefixFilter(Bytes.toBytes("foo:bar"));
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setFilter(f);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double sum = null;
++    sum = aClient.sum(TEST_TABLE, ci, scan);
++    assertEquals(null, sum);
++  }
++
++  /**
++   * ****************************** Test Cases for Avg **************
++   */
++  /**
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testAvgWithValidRange() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double avg = aClient.avg(TEST_TABLE, ci, scan);
++    assertEquals(9.5, avg, 0);
++  }
++
++  /**
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testAvgWithValidRange2() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    scan.setStartRow(ROWS[5]);
++    scan.setStopRow(ROWS[15]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci =
++        new DoubleColumnInterpreter();
++    double avg = aClient.avg(TEST_TABLE, ci, scan);
++    assertEquals(9.5, avg, 0);
++  }
++
++  @Test(timeout = 300000)
++  public void testAvgWithValidRangeWithNoCQ() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double avg = aClient.avg(TEST_TABLE, ci, scan);
++    assertEquals(10.45, avg, 0.01);
++  }
++
++  @Test(timeout = 300000)
++  public void testAvgWithValidRange2WithNoCQ() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setStartRow(ROWS[6]);
++    scan.setStopRow(ROWS[7]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double avg = aClient.avg(TEST_TABLE, ci, scan);
++    assertEquals(6 + 0.60, avg, 0);
++  }
++
++  @Test(timeout = 300000)
++  public void testAvgWithValidRangeWithNullCF() {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double avg = null;
++    try {
++      avg = aClient.avg(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++    }
++    assertEquals(null, avg);// CP will throw an IOException about the
++    // null column family, and max will be set to 0
++  }
++
++  @Test(timeout = 300000)
++  public void testAvgWithInvalidRange() {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    scan.setStartRow(ROWS[5]);
++    scan.setStopRow(ROWS[1]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double avg = null;
++    try {
++      avg = aClient.avg(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++    }
++    assertEquals(null, avg);// control should go to the catch block
++  }
++
++  @Test(timeout = 300000)
++  public void testAvgWithFilter() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    Filter f = new PrefixFilter(Bytes.toBytes("foo:bar"));
++    scan.setFilter(f);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double avg = null;
++    avg = aClient.avg(TEST_TABLE, ci, scan);
++    assertEquals(Double.NaN, avg, 0);
++  }
++
++  /**
++   * ****************** Test cases for STD **********************
++   */
++  /**
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testStdWithValidRange() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double std = aClient.std(TEST_TABLE, ci, scan);
++    assertEquals(5.766, std, 0.05d);
++  }
++
++  /**
++   * need to change this
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testStdWithValidRange2() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addColumn(TEST_FAMILY, TEST_QUALIFIER);
++    scan.setStartRow(ROWS[5]);
++    scan.setStopRow(ROWS[15]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double std = aClient.std(TEST_TABLE, ci, scan);
++    assertEquals(2.87, std, 0.05d);
++  }
++
++  /**
++   * need to change this
++   * @throws Throwable
++   */
++  @Test(timeout = 300000)
++  public void testStdWithValidRangeWithNoCQ() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double std = aClient.std(TEST_TABLE, ci, scan);
++    assertEquals(6.342, std, 0.05d);
++  }
++
++  @Test(timeout = 300000)
++  public void testStdWithValidRange2WithNoCQ() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setStartRow(ROWS[6]);
++    scan.setStopRow(ROWS[7]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    double std = aClient.std(TEST_TABLE, ci, scan);
++    System.out.println("std is:" + std);
++    assertEquals(0, std, 0.05d);
++  }
++
++  @Test(timeout = 300000)
++  public void testStdWithValidRangeWithNullCF() {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.setStartRow(ROWS[6]);
++    scan.setStopRow(ROWS[17]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double std = null;
++    try {
++      std = aClient.std(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++    }
++    assertEquals(null, std);// CP will throw an IOException about the
++    // null column family, and max will be set to 0
++  }
++
++  @Test
++  public void testStdWithInvalidRange() {
++    AggregationClient aClient = new AggregationClient(conf);
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setStartRow(ROWS[6]);
++    scan.setStopRow(ROWS[1]);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double std = null;
++    try {
++      std = aClient.std(TEST_TABLE, ci, scan);
++    } catch (Throwable e) {
++    }
++    assertEquals(null, std);// control should go to the catch block
++  }
++
++  @Test(timeout = 300000)
++  public void testStdWithFilter() throws Throwable {
++    AggregationClient aClient = new AggregationClient(conf);
++    Filter f = new PrefixFilter(Bytes.toBytes("foo:bar"));
++    Scan scan = new Scan();
++    scan.addFamily(TEST_FAMILY);
++    scan.setFilter(f);
++    final ColumnInterpreter<Double, Double, EmptyMsg, DoubleMsg, DoubleMsg> ci = 
++        new DoubleColumnInterpreter();
++    Double std = null;
++    std = aClient.std(TEST_TABLE, ci, scan);
++    assertEquals(Double.NaN, std, 0);
++  }
++}
