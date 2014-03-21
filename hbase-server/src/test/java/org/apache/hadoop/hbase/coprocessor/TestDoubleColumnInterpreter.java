@@ -340,9 +340,10 @@ public class TestDoubleColumnInterpreter {
     try {
       min = aClient.min(TEST_TABLE, ci, scan);
     } catch (Throwable e) {
+      min = null;
     }
     assertEquals(null, min);// CP will throw an IOException about the
-    // null column family, and max will be set to 0
+    // null column family, and min will be set to 0
   }
 
   @Test(timeout = 300000)

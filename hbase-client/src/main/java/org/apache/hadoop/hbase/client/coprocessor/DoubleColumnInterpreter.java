@@ -48,12 +48,14 @@ public class DoubleColumnInterpreter extends ColumnInterpreter<Double, Double,
     return Bytes.toDouble(kv.getValueArray(), kv.getValueOffset());
   }
 
-   @Override
+  @Override
   public Double add(Double d1, Double d2) {
     if (d1 == null ^ d2 == null) {
       return (d1 == null) ? d2 : d1; // either of one is null.
-    } else if (d1 == null) // both are null
+    } 
+    if (d1 == null) {// both are null
       return null;
+    }
     return d1 + d2;
   }
 
