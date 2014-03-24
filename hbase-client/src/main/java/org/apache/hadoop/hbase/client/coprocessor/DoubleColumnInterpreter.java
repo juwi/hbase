@@ -24,6 +24,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.coprocessor.ColumnInterpreter;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.EmptyMsg;
 import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.DoubleMsg;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -41,7 +42,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 public class DoubleColumnInterpreter extends ColumnInterpreter<Double, Double, 
       EmptyMsg, DoubleMsg, DoubleMsg>{
  
-  public Double getValue(byte[] colFamily, byte[] colQualifier, KeyValue kv)
+  public Double getValue(byte[] colFamily, byte[] colQualifier, Cell kv)
       throws IOException {
     if (kv == null || kv.getValueLength() != Bytes.SIZEOF_DOUBLE)
       return null;
@@ -50,12 +51,9 @@ public class DoubleColumnInterpreter extends ColumnInterpreter<Double, Double,
 
   @Override
   public Double add(Double d1, Double d2) {
-    if (d1 == null ^ d2 == null) {
+    if (d1 == null || d2 == null) {
       return (d1 == null) ? d2 : d1; // either of one is null.
     } 
-    if (d1 == null) {// both are null
-      return null;
-    }
     return d1 + d2;
   }
 
