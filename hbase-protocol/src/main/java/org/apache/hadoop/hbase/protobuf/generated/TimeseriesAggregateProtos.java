@@ -74,15 +74,29 @@ public final class TimeseriesAggregateProtos {
      */
     com.google.protobuf.ByteString getInterpreterSpecificBytes();
 
-    // required int32 time_nterval_seconds = 4;
+    // required int32 time_interval_seconds = 4;
     /**
-     * <code>required int32 time_nterval_seconds = 4;</code>
+     * <code>required int32 time_interval_seconds = 4;</code>
      */
-    boolean hasTimeNtervalSeconds();
+    boolean hasTimeIntervalSeconds();
     /**
-     * <code>required int32 time_nterval_seconds = 4;</code>
+     * <code>required int32 time_interval_seconds = 4;</code>
      */
-    int getTimeNtervalSeconds();
+    int getTimeIntervalSeconds();
+
+    // optional .TimeseriesRange range = 5;
+    /**
+     * <code>optional .TimeseriesRange range = 5;</code>
+     */
+    boolean hasRange();
+    /**
+     * <code>optional .TimeseriesRange range = 5;</code>
+     */
+    org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange getRange();
+    /**
+     * <code>optional .TimeseriesRange range = 5;</code>
+     */
+    org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRangeOrBuilder getRangeOrBuilder();
   }
   /**
    * Protobuf type {@code TimeseriesAggregateRequest}
@@ -160,7 +174,20 @@ public final class TimeseriesAggregateProtos {
             }
             case 32: {
               bitField0_ |= 0x00000008;
-              timeNtervalSeconds_ = input.readInt32();
+              timeIntervalSeconds_ = input.readInt32();
+              break;
+            }
+            case 42: {
+              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000010) == 0x00000010)) {
+                subBuilder = range_.toBuilder();
+              }
+              range_ = input.readMessage(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(range_);
+                range_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000010;
               break;
             }
           }
@@ -308,27 +335,50 @@ public final class TimeseriesAggregateProtos {
       return interpreterSpecificBytes_;
     }
 
-    // required int32 time_nterval_seconds = 4;
-    public static final int TIME_NTERVAL_SECONDS_FIELD_NUMBER = 4;
-    private int timeNtervalSeconds_;
+    // required int32 time_interval_seconds = 4;
+    public static final int TIME_INTERVAL_SECONDS_FIELD_NUMBER = 4;
+    private int timeIntervalSeconds_;
     /**
-     * <code>required int32 time_nterval_seconds = 4;</code>
+     * <code>required int32 time_interval_seconds = 4;</code>
      */
-    public boolean hasTimeNtervalSeconds() {
+    public boolean hasTimeIntervalSeconds() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>required int32 time_nterval_seconds = 4;</code>
+     * <code>required int32 time_interval_seconds = 4;</code>
      */
-    public int getTimeNtervalSeconds() {
-      return timeNtervalSeconds_;
+    public int getTimeIntervalSeconds() {
+      return timeIntervalSeconds_;
+    }
+
+    // optional .TimeseriesRange range = 5;
+    public static final int RANGE_FIELD_NUMBER = 5;
+    private org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange range_;
+    /**
+     * <code>optional .TimeseriesRange range = 5;</code>
+     */
+    public boolean hasRange() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional .TimeseriesRange range = 5;</code>
+     */
+    public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange getRange() {
+      return range_;
+    }
+    /**
+     * <code>optional .TimeseriesRange range = 5;</code>
+     */
+    public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRangeOrBuilder getRangeOrBuilder() {
+      return range_;
     }
 
     private void initFields() {
       interpreterClassName_ = "";
       scan_ = org.apache.hadoop.hbase.protobuf.generated.ClientProtos.Scan.getDefaultInstance();
       interpreterSpecificBytes_ = com.google.protobuf.ByteString.EMPTY;
-      timeNtervalSeconds_ = 0;
+      timeIntervalSeconds_ = 0;
+      range_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -343,13 +393,19 @@ public final class TimeseriesAggregateProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasTimeNtervalSeconds()) {
+      if (!hasTimeIntervalSeconds()) {
         memoizedIsInitialized = 0;
         return false;
       }
       if (!getScan().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
+      }
+      if (hasRange()) {
+        if (!getRange().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -368,7 +424,10 @@ public final class TimeseriesAggregateProtos {
         output.writeBytes(3, interpreterSpecificBytes_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeInt32(4, timeNtervalSeconds_);
+        output.writeInt32(4, timeIntervalSeconds_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeMessage(5, range_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -393,7 +452,11 @@ public final class TimeseriesAggregateProtos {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(4, timeNtervalSeconds_);
+          .computeInt32Size(4, timeIntervalSeconds_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, range_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -433,10 +496,15 @@ public final class TimeseriesAggregateProtos {
         result = result && getInterpreterSpecificBytes()
             .equals(other.getInterpreterSpecificBytes());
       }
-      result = result && (hasTimeNtervalSeconds() == other.hasTimeNtervalSeconds());
-      if (hasTimeNtervalSeconds()) {
-        result = result && (getTimeNtervalSeconds()
-            == other.getTimeNtervalSeconds());
+      result = result && (hasTimeIntervalSeconds() == other.hasTimeIntervalSeconds());
+      if (hasTimeIntervalSeconds()) {
+        result = result && (getTimeIntervalSeconds()
+            == other.getTimeIntervalSeconds());
+      }
+      result = result && (hasRange() == other.hasRange());
+      if (hasRange()) {
+        result = result && getRange()
+            .equals(other.getRange());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -463,9 +531,13 @@ public final class TimeseriesAggregateProtos {
         hash = (37 * hash) + INTERPRETER_SPECIFIC_BYTES_FIELD_NUMBER;
         hash = (53 * hash) + getInterpreterSpecificBytes().hashCode();
       }
-      if (hasTimeNtervalSeconds()) {
-        hash = (37 * hash) + TIME_NTERVAL_SECONDS_FIELD_NUMBER;
-        hash = (53 * hash) + getTimeNtervalSeconds();
+      if (hasTimeIntervalSeconds()) {
+        hash = (37 * hash) + TIME_INTERVAL_SECONDS_FIELD_NUMBER;
+        hash = (53 * hash) + getTimeIntervalSeconds();
+      }
+      if (hasRange()) {
+        hash = (37 * hash) + RANGE_FIELD_NUMBER;
+        hash = (53 * hash) + getRange().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -569,6 +641,7 @@ public final class TimeseriesAggregateProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getScanFieldBuilder();
+          getRangeFieldBuilder();
         }
       }
       private static Builder create() {
@@ -587,8 +660,14 @@ public final class TimeseriesAggregateProtos {
         bitField0_ = (bitField0_ & ~0x00000002);
         interpreterSpecificBytes_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000004);
-        timeNtervalSeconds_ = 0;
+        timeIntervalSeconds_ = 0;
         bitField0_ = (bitField0_ & ~0x00000008);
+        if (rangeBuilder_ == null) {
+          range_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.getDefaultInstance();
+        } else {
+          rangeBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -636,7 +715,15 @@ public final class TimeseriesAggregateProtos {
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.timeNtervalSeconds_ = timeNtervalSeconds_;
+        result.timeIntervalSeconds_ = timeIntervalSeconds_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        if (rangeBuilder_ == null) {
+          result.range_ = range_;
+        } else {
+          result.range_ = rangeBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -664,8 +751,11 @@ public final class TimeseriesAggregateProtos {
         if (other.hasInterpreterSpecificBytes()) {
           setInterpreterSpecificBytes(other.getInterpreterSpecificBytes());
         }
-        if (other.hasTimeNtervalSeconds()) {
-          setTimeNtervalSeconds(other.getTimeNtervalSeconds());
+        if (other.hasTimeIntervalSeconds()) {
+          setTimeIntervalSeconds(other.getTimeIntervalSeconds());
+        }
+        if (other.hasRange()) {
+          mergeRange(other.getRange());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -680,13 +770,19 @@ public final class TimeseriesAggregateProtos {
           
           return false;
         }
-        if (!hasTimeNtervalSeconds()) {
+        if (!hasTimeIntervalSeconds()) {
           
           return false;
         }
         if (!getScan().isInitialized()) {
           
           return false;
+        }
+        if (hasRange()) {
+          if (!getRange().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -985,37 +1081,154 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
 
-      // required int32 time_nterval_seconds = 4;
-      private int timeNtervalSeconds_ ;
+      // required int32 time_interval_seconds = 4;
+      private int timeIntervalSeconds_ ;
       /**
-       * <code>required int32 time_nterval_seconds = 4;</code>
+       * <code>required int32 time_interval_seconds = 4;</code>
        */
-      public boolean hasTimeNtervalSeconds() {
+      public boolean hasTimeIntervalSeconds() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>required int32 time_nterval_seconds = 4;</code>
+       * <code>required int32 time_interval_seconds = 4;</code>
        */
-      public int getTimeNtervalSeconds() {
-        return timeNtervalSeconds_;
+      public int getTimeIntervalSeconds() {
+        return timeIntervalSeconds_;
       }
       /**
-       * <code>required int32 time_nterval_seconds = 4;</code>
+       * <code>required int32 time_interval_seconds = 4;</code>
        */
-      public Builder setTimeNtervalSeconds(int value) {
+      public Builder setTimeIntervalSeconds(int value) {
         bitField0_ |= 0x00000008;
-        timeNtervalSeconds_ = value;
+        timeIntervalSeconds_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required int32 time_nterval_seconds = 4;</code>
+       * <code>required int32 time_interval_seconds = 4;</code>
        */
-      public Builder clearTimeNtervalSeconds() {
+      public Builder clearTimeIntervalSeconds() {
         bitField0_ = (bitField0_ & ~0x00000008);
-        timeNtervalSeconds_ = 0;
+        timeIntervalSeconds_ = 0;
         onChanged();
         return this;
+      }
+
+      // optional .TimeseriesRange range = 5;
+      private org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange range_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRangeOrBuilder> rangeBuilder_;
+      /**
+       * <code>optional .TimeseriesRange range = 5;</code>
+       */
+      public boolean hasRange() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional .TimeseriesRange range = 5;</code>
+       */
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange getRange() {
+        if (rangeBuilder_ == null) {
+          return range_;
+        } else {
+          return rangeBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .TimeseriesRange range = 5;</code>
+       */
+      public Builder setRange(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange value) {
+        if (rangeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          range_ = value;
+          onChanged();
+        } else {
+          rangeBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .TimeseriesRange range = 5;</code>
+       */
+      public Builder setRange(
+          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.Builder builderForValue) {
+        if (rangeBuilder_ == null) {
+          range_ = builderForValue.build();
+          onChanged();
+        } else {
+          rangeBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .TimeseriesRange range = 5;</code>
+       */
+      public Builder mergeRange(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange value) {
+        if (rangeBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) == 0x00000010) &&
+              range_ != org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.getDefaultInstance()) {
+            range_ =
+              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.newBuilder(range_).mergeFrom(value).buildPartial();
+          } else {
+            range_ = value;
+          }
+          onChanged();
+        } else {
+          rangeBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .TimeseriesRange range = 5;</code>
+       */
+      public Builder clearRange() {
+        if (rangeBuilder_ == null) {
+          range_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.getDefaultInstance();
+          onChanged();
+        } else {
+          rangeBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
+        return this;
+      }
+      /**
+       * <code>optional .TimeseriesRange range = 5;</code>
+       */
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.Builder getRangeBuilder() {
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return getRangeFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .TimeseriesRange range = 5;</code>
+       */
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRangeOrBuilder getRangeOrBuilder() {
+        if (rangeBuilder_ != null) {
+          return rangeBuilder_.getMessageOrBuilder();
+        } else {
+          return range_;
+        }
+      }
+      /**
+       * <code>optional .TimeseriesRange range = 5;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRangeOrBuilder> 
+          getRangeFieldBuilder() {
+        if (rangeBuilder_ == null) {
+          rangeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRangeOrBuilder>(
+                  range_,
+                  getParentForChildren(),
+                  isClean());
+          range_ = null;
+        }
+        return rangeBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:TimeseriesAggregateRequest)
@@ -1029,7 +1242,720 @@ public final class TimeseriesAggregateProtos {
     // @@protoc_insertion_point(class_scope:TimeseriesAggregateRequest)
   }
 
-  public interface AggregateResponseEntryOrBuilder
+  public interface TimeseriesRangeOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required int32 key_timestamp_min = 1;
+    /**
+     * <code>required int32 key_timestamp_min = 1;</code>
+     */
+    boolean hasKeyTimestampMin();
+    /**
+     * <code>required int32 key_timestamp_min = 1;</code>
+     */
+    int getKeyTimestampMin();
+
+    // required int32 key_timestamp_max = 2;
+    /**
+     * <code>required int32 key_timestamp_max = 2;</code>
+     */
+    boolean hasKeyTimestampMax();
+    /**
+     * <code>required int32 key_timestamp_max = 2;</code>
+     */
+    int getKeyTimestampMax();
+
+    // required string key_timestamp_filter_pattern = 3;
+    /**
+     * <code>required string key_timestamp_filter_pattern = 3;</code>
+     */
+    boolean hasKeyTimestampFilterPattern();
+    /**
+     * <code>required string key_timestamp_filter_pattern = 3;</code>
+     */
+    java.lang.String getKeyTimestampFilterPattern();
+    /**
+     * <code>required string key_timestamp_filter_pattern = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getKeyTimestampFilterPatternBytes();
+  }
+  /**
+   * Protobuf type {@code TimeseriesRange}
+   */
+  public static final class TimeseriesRange extends
+      com.google.protobuf.GeneratedMessage
+      implements TimeseriesRangeOrBuilder {
+    // Use TimeseriesRange.newBuilder() to construct.
+    private TimeseriesRange(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private TimeseriesRange(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final TimeseriesRange defaultInstance;
+    public static TimeseriesRange getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public TimeseriesRange getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private TimeseriesRange(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              keyTimestampMin_ = input.readInt32();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              keyTimestampMax_ = input.readInt32();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              keyTimestampFilterPattern_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesRange_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesRange_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.class, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<TimeseriesRange> PARSER =
+        new com.google.protobuf.AbstractParser<TimeseriesRange>() {
+      public TimeseriesRange parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new TimeseriesRange(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TimeseriesRange> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required int32 key_timestamp_min = 1;
+    public static final int KEY_TIMESTAMP_MIN_FIELD_NUMBER = 1;
+    private int keyTimestampMin_;
+    /**
+     * <code>required int32 key_timestamp_min = 1;</code>
+     */
+    public boolean hasKeyTimestampMin() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required int32 key_timestamp_min = 1;</code>
+     */
+    public int getKeyTimestampMin() {
+      return keyTimestampMin_;
+    }
+
+    // required int32 key_timestamp_max = 2;
+    public static final int KEY_TIMESTAMP_MAX_FIELD_NUMBER = 2;
+    private int keyTimestampMax_;
+    /**
+     * <code>required int32 key_timestamp_max = 2;</code>
+     */
+    public boolean hasKeyTimestampMax() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required int32 key_timestamp_max = 2;</code>
+     */
+    public int getKeyTimestampMax() {
+      return keyTimestampMax_;
+    }
+
+    // required string key_timestamp_filter_pattern = 3;
+    public static final int KEY_TIMESTAMP_FILTER_PATTERN_FIELD_NUMBER = 3;
+    private java.lang.Object keyTimestampFilterPattern_;
+    /**
+     * <code>required string key_timestamp_filter_pattern = 3;</code>
+     */
+    public boolean hasKeyTimestampFilterPattern() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required string key_timestamp_filter_pattern = 3;</code>
+     */
+    public java.lang.String getKeyTimestampFilterPattern() {
+      java.lang.Object ref = keyTimestampFilterPattern_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          keyTimestampFilterPattern_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string key_timestamp_filter_pattern = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getKeyTimestampFilterPatternBytes() {
+      java.lang.Object ref = keyTimestampFilterPattern_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        keyTimestampFilterPattern_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      keyTimestampMin_ = 0;
+      keyTimestampMax_ = 0;
+      keyTimestampFilterPattern_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasKeyTimestampMin()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasKeyTimestampMax()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasKeyTimestampFilterPattern()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt32(1, keyTimestampMin_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt32(2, keyTimestampMax_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getKeyTimestampFilterPatternBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, keyTimestampMin_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, keyTimestampMax_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getKeyTimestampFilterPatternBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange)) {
+        return super.equals(obj);
+      }
+      org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange other = (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange) obj;
+
+      boolean result = true;
+      result = result && (hasKeyTimestampMin() == other.hasKeyTimestampMin());
+      if (hasKeyTimestampMin()) {
+        result = result && (getKeyTimestampMin()
+            == other.getKeyTimestampMin());
+      }
+      result = result && (hasKeyTimestampMax() == other.hasKeyTimestampMax());
+      if (hasKeyTimestampMax()) {
+        result = result && (getKeyTimestampMax()
+            == other.getKeyTimestampMax());
+      }
+      result = result && (hasKeyTimestampFilterPattern() == other.hasKeyTimestampFilterPattern());
+      if (hasKeyTimestampFilterPattern()) {
+        result = result && getKeyTimestampFilterPattern()
+            .equals(other.getKeyTimestampFilterPattern());
+      }
+      result = result &&
+          getUnknownFields().equals(other.getUnknownFields());
+      return result;
+    }
+
+    private int memoizedHashCode = 0;
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasKeyTimestampMin()) {
+        hash = (37 * hash) + KEY_TIMESTAMP_MIN_FIELD_NUMBER;
+        hash = (53 * hash) + getKeyTimestampMin();
+      }
+      if (hasKeyTimestampMax()) {
+        hash = (37 * hash) + KEY_TIMESTAMP_MAX_FIELD_NUMBER;
+        hash = (53 * hash) + getKeyTimestampMax();
+      }
+      if (hasKeyTimestampFilterPattern()) {
+        hash = (37 * hash) + KEY_TIMESTAMP_FILTER_PATTERN_FIELD_NUMBER;
+        hash = (53 * hash) + getKeyTimestampFilterPattern().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code TimeseriesRange}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRangeOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesRange_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesRange_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.class, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        keyTimestampMin_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        keyTimestampMax_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        keyTimestampFilterPattern_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesRange_descriptor;
+      }
+
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange getDefaultInstanceForType() {
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange build() {
+        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange buildPartial() {
+        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange result = new org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.keyTimestampMin_ = keyTimestampMin_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.keyTimestampMax_ = keyTimestampMax_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.keyTimestampFilterPattern_ = keyTimestampFilterPattern_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange) {
+          return mergeFrom((org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange other) {
+        if (other == org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.getDefaultInstance()) return this;
+        if (other.hasKeyTimestampMin()) {
+          setKeyTimestampMin(other.getKeyTimestampMin());
+        }
+        if (other.hasKeyTimestampMax()) {
+          setKeyTimestampMax(other.getKeyTimestampMax());
+        }
+        if (other.hasKeyTimestampFilterPattern()) {
+          bitField0_ |= 0x00000004;
+          keyTimestampFilterPattern_ = other.keyTimestampFilterPattern_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasKeyTimestampMin()) {
+          
+          return false;
+        }
+        if (!hasKeyTimestampMax()) {
+          
+          return false;
+        }
+        if (!hasKeyTimestampFilterPattern()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required int32 key_timestamp_min = 1;
+      private int keyTimestampMin_ ;
+      /**
+       * <code>required int32 key_timestamp_min = 1;</code>
+       */
+      public boolean hasKeyTimestampMin() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required int32 key_timestamp_min = 1;</code>
+       */
+      public int getKeyTimestampMin() {
+        return keyTimestampMin_;
+      }
+      /**
+       * <code>required int32 key_timestamp_min = 1;</code>
+       */
+      public Builder setKeyTimestampMin(int value) {
+        bitField0_ |= 0x00000001;
+        keyTimestampMin_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 key_timestamp_min = 1;</code>
+       */
+      public Builder clearKeyTimestampMin() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        keyTimestampMin_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // required int32 key_timestamp_max = 2;
+      private int keyTimestampMax_ ;
+      /**
+       * <code>required int32 key_timestamp_max = 2;</code>
+       */
+      public boolean hasKeyTimestampMax() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required int32 key_timestamp_max = 2;</code>
+       */
+      public int getKeyTimestampMax() {
+        return keyTimestampMax_;
+      }
+      /**
+       * <code>required int32 key_timestamp_max = 2;</code>
+       */
+      public Builder setKeyTimestampMax(int value) {
+        bitField0_ |= 0x00000002;
+        keyTimestampMax_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 key_timestamp_max = 2;</code>
+       */
+      public Builder clearKeyTimestampMax() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        keyTimestampMax_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // required string key_timestamp_filter_pattern = 3;
+      private java.lang.Object keyTimestampFilterPattern_ = "";
+      /**
+       * <code>required string key_timestamp_filter_pattern = 3;</code>
+       */
+      public boolean hasKeyTimestampFilterPattern() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required string key_timestamp_filter_pattern = 3;</code>
+       */
+      public java.lang.String getKeyTimestampFilterPattern() {
+        java.lang.Object ref = keyTimestampFilterPattern_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          keyTimestampFilterPattern_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string key_timestamp_filter_pattern = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getKeyTimestampFilterPatternBytes() {
+        java.lang.Object ref = keyTimestampFilterPattern_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          keyTimestampFilterPattern_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string key_timestamp_filter_pattern = 3;</code>
+       */
+      public Builder setKeyTimestampFilterPattern(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        keyTimestampFilterPattern_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string key_timestamp_filter_pattern = 3;</code>
+       */
+      public Builder clearKeyTimestampFilterPattern() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        keyTimestampFilterPattern_ = getDefaultInstance().getKeyTimestampFilterPattern();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string key_timestamp_filter_pattern = 3;</code>
+       */
+      public Builder setKeyTimestampFilterPatternBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        keyTimestampFilterPattern_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:TimeseriesRange)
+    }
+
+    static {
+      defaultInstance = new TimeseriesRange(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:TimeseriesRange)
+  }
+
+  public interface TimeseriesAggregateResponseEntryOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
     // repeated bytes first_part = 1;
@@ -1084,24 +2010,24 @@ public final class TimeseriesAggregateProtos {
     com.google.protobuf.ByteString getSecondPart();
   }
   /**
-   * Protobuf type {@code AggregateResponseEntry}
+   * Protobuf type {@code TimeseriesAggregateResponseEntry}
    */
-  public static final class AggregateResponseEntry extends
+  public static final class TimeseriesAggregateResponseEntry extends
       com.google.protobuf.GeneratedMessage
-      implements AggregateResponseEntryOrBuilder {
-    // Use AggregateResponseEntry.newBuilder() to construct.
-    private AggregateResponseEntry(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements TimeseriesAggregateResponseEntryOrBuilder {
+    // Use TimeseriesAggregateResponseEntry.newBuilder() to construct.
+    private TimeseriesAggregateResponseEntry(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private AggregateResponseEntry(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private TimeseriesAggregateResponseEntry(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final AggregateResponseEntry defaultInstance;
-    public static AggregateResponseEntry getDefaultInstance() {
+    private static final TimeseriesAggregateResponseEntry defaultInstance;
+    public static TimeseriesAggregateResponseEntry getDefaultInstance() {
       return defaultInstance;
     }
 
-    public AggregateResponseEntry getDefaultInstanceForType() {
+    public TimeseriesAggregateResponseEntry getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -1111,7 +2037,7 @@ public final class TimeseriesAggregateProtos {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private AggregateResponseEntry(
+    private TimeseriesAggregateResponseEntry(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1164,28 +2090,28 @@ public final class TimeseriesAggregateProtos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_AggregateResponseEntry_descriptor;
+      return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesAggregateResponseEntry_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_AggregateResponseEntry_fieldAccessorTable
+      return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesAggregateResponseEntry_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.class, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.Builder.class);
+              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.class, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<AggregateResponseEntry> PARSER =
-        new com.google.protobuf.AbstractParser<AggregateResponseEntry>() {
-      public AggregateResponseEntry parsePartialFrom(
+    public static com.google.protobuf.Parser<TimeseriesAggregateResponseEntry> PARSER =
+        new com.google.protobuf.AbstractParser<TimeseriesAggregateResponseEntry>() {
+      public TimeseriesAggregateResponseEntry parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new AggregateResponseEntry(input, extensionRegistry);
+        return new TimeseriesAggregateResponseEntry(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<AggregateResponseEntry> getParserForType() {
+    public com.google.protobuf.Parser<TimeseriesAggregateResponseEntry> getParserForType() {
       return PARSER;
     }
 
@@ -1317,10 +2243,10 @@ public final class TimeseriesAggregateProtos {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry)) {
+      if (!(obj instanceof org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry)) {
         return super.equals(obj);
       }
-      org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry other = (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry) obj;
+      org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry other = (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry) obj;
 
       boolean result = true;
       result = result && getFirstPartList()
@@ -1356,53 +2282,53 @@ public final class TimeseriesAggregateProtos {
       return hash;
     }
 
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parseFrom(byte[] data)
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parseFrom(java.io.InputStream input)
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parseDelimitedFrom(java.io.InputStream input)
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parseDelimitedFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1411,7 +2337,7 @@ public final class TimeseriesAggregateProtos {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry prototype) {
+    public static Builder newBuilder(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -1423,24 +2349,24 @@ public final class TimeseriesAggregateProtos {
       return builder;
     }
     /**
-     * Protobuf type {@code AggregateResponseEntry}
+     * Protobuf type {@code TimeseriesAggregateResponseEntry}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntryOrBuilder {
+       implements org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_AggregateResponseEntry_descriptor;
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesAggregateResponseEntry_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_AggregateResponseEntry_fieldAccessorTable
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesAggregateResponseEntry_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.class, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.Builder.class);
+                org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.class, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.Builder.class);
       }
 
-      // Construct using org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.newBuilder()
+      // Construct using org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1473,23 +2399,23 @@ public final class TimeseriesAggregateProtos {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_AggregateResponseEntry_descriptor;
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesAggregateResponseEntry_descriptor;
       }
 
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry getDefaultInstanceForType() {
-        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.getDefaultInstance();
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry getDefaultInstanceForType() {
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.getDefaultInstance();
       }
 
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry build() {
-        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry result = buildPartial();
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry build() {
+        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry buildPartial() {
-        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry result = new org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry(this);
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry buildPartial() {
+        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry result = new org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -1507,16 +2433,16 @@ public final class TimeseriesAggregateProtos {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry) {
-          return mergeFrom((org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry)other);
+        if (other instanceof org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry) {
+          return mergeFrom((org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry other) {
-        if (other == org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry other) {
+        if (other == org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.getDefaultInstance()) return this;
         if (!other.firstPart_.isEmpty()) {
           if (firstPart_.isEmpty()) {
             firstPart_ = other.firstPart_;
@@ -1542,11 +2468,11 @@ public final class TimeseriesAggregateProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry parsedMessage = null;
+        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry) e.getUnfinishedMessage();
+          parsedMessage = (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -1728,18 +2654,18 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:AggregateResponseEntry)
+      // @@protoc_insertion_point(builder_scope:TimeseriesAggregateResponseEntry)
     }
 
     static {
-      defaultInstance = new AggregateResponseEntry(true);
+      defaultInstance = new TimeseriesAggregateResponseEntry(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:AggregateResponseEntry)
+    // @@protoc_insertion_point(class_scope:TimeseriesAggregateResponseEntry)
   }
 
-  public interface AggregateResponseMapEntryOrBuilder
+  public interface TimeseriesAggregateResponseMapEntryOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
     // required bytes key = 1;
@@ -1752,39 +2678,39 @@ public final class TimeseriesAggregateProtos {
      */
     com.google.protobuf.ByteString getKey();
 
-    // required .AggregateResponseEntry value = 2;
+    // required .TimeseriesAggregateResponseEntry value = 2;
     /**
-     * <code>required .AggregateResponseEntry value = 2;</code>
+     * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
      */
     boolean hasValue();
     /**
-     * <code>required .AggregateResponseEntry value = 2;</code>
+     * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
      */
-    org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry getValue();
+    org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry getValue();
     /**
-     * <code>required .AggregateResponseEntry value = 2;</code>
+     * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
      */
-    org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntryOrBuilder getValueOrBuilder();
+    org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntryOrBuilder getValueOrBuilder();
   }
   /**
-   * Protobuf type {@code AggregateResponseMapEntry}
+   * Protobuf type {@code TimeseriesAggregateResponseMapEntry}
    */
-  public static final class AggregateResponseMapEntry extends
+  public static final class TimeseriesAggregateResponseMapEntry extends
       com.google.protobuf.GeneratedMessage
-      implements AggregateResponseMapEntryOrBuilder {
-    // Use AggregateResponseMapEntry.newBuilder() to construct.
-    private AggregateResponseMapEntry(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements TimeseriesAggregateResponseMapEntryOrBuilder {
+    // Use TimeseriesAggregateResponseMapEntry.newBuilder() to construct.
+    private TimeseriesAggregateResponseMapEntry(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private AggregateResponseMapEntry(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private TimeseriesAggregateResponseMapEntry(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final AggregateResponseMapEntry defaultInstance;
-    public static AggregateResponseMapEntry getDefaultInstance() {
+    private static final TimeseriesAggregateResponseMapEntry defaultInstance;
+    public static TimeseriesAggregateResponseMapEntry getDefaultInstance() {
       return defaultInstance;
     }
 
-    public AggregateResponseMapEntry getDefaultInstanceForType() {
+    public TimeseriesAggregateResponseMapEntry getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -1794,7 +2720,7 @@ public final class TimeseriesAggregateProtos {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private AggregateResponseMapEntry(
+    private TimeseriesAggregateResponseMapEntry(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1823,11 +2749,11 @@ public final class TimeseriesAggregateProtos {
               break;
             }
             case 18: {
-              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.Builder subBuilder = null;
+              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
                 subBuilder = value_.toBuilder();
               }
-              value_ = input.readMessage(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.PARSER, extensionRegistry);
+              value_ = input.readMessage(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.PARSER, extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(value_);
                 value_ = subBuilder.buildPartial();
@@ -1849,28 +2775,28 @@ public final class TimeseriesAggregateProtos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_AggregateResponseMapEntry_descriptor;
+      return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesAggregateResponseMapEntry_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_AggregateResponseMapEntry_fieldAccessorTable
+      return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesAggregateResponseMapEntry_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.class, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder.class);
+              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.class, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<AggregateResponseMapEntry> PARSER =
-        new com.google.protobuf.AbstractParser<AggregateResponseMapEntry>() {
-      public AggregateResponseMapEntry parsePartialFrom(
+    public static com.google.protobuf.Parser<TimeseriesAggregateResponseMapEntry> PARSER =
+        new com.google.protobuf.AbstractParser<TimeseriesAggregateResponseMapEntry>() {
+      public TimeseriesAggregateResponseMapEntry parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new AggregateResponseMapEntry(input, extensionRegistry);
+        return new TimeseriesAggregateResponseMapEntry(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<AggregateResponseMapEntry> getParserForType() {
+    public com.google.protobuf.Parser<TimeseriesAggregateResponseMapEntry> getParserForType() {
       return PARSER;
     }
 
@@ -1891,31 +2817,31 @@ public final class TimeseriesAggregateProtos {
       return key_;
     }
 
-    // required .AggregateResponseEntry value = 2;
+    // required .TimeseriesAggregateResponseEntry value = 2;
     public static final int VALUE_FIELD_NUMBER = 2;
-    private org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry value_;
+    private org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry value_;
     /**
-     * <code>required .AggregateResponseEntry value = 2;</code>
+     * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
      */
     public boolean hasValue() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .AggregateResponseEntry value = 2;</code>
+     * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
      */
-    public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry getValue() {
+    public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry getValue() {
       return value_;
     }
     /**
-     * <code>required .AggregateResponseEntry value = 2;</code>
+     * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
      */
-    public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntryOrBuilder getValueOrBuilder() {
+    public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntryOrBuilder getValueOrBuilder() {
       return value_;
     }
 
     private void initFields() {
       key_ = com.google.protobuf.ByteString.EMPTY;
-      value_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.getDefaultInstance();
+      value_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1977,10 +2903,10 @@ public final class TimeseriesAggregateProtos {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry)) {
+      if (!(obj instanceof org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry)) {
         return super.equals(obj);
       }
-      org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry other = (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry) obj;
+      org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry other = (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry) obj;
 
       boolean result = true;
       result = result && (hasKey() == other.hasKey());
@@ -2019,53 +2945,53 @@ public final class TimeseriesAggregateProtos {
       return hash;
     }
 
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parseFrom(byte[] data)
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parseFrom(java.io.InputStream input)
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parseDelimitedFrom(java.io.InputStream input)
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parseDelimitedFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parseFrom(
+    public static org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2074,7 +3000,7 @@ public final class TimeseriesAggregateProtos {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry prototype) {
+    public static Builder newBuilder(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -2086,24 +3012,24 @@ public final class TimeseriesAggregateProtos {
       return builder;
     }
     /**
-     * Protobuf type {@code AggregateResponseMapEntry}
+     * Protobuf type {@code TimeseriesAggregateResponseMapEntry}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntryOrBuilder {
+       implements org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_AggregateResponseMapEntry_descriptor;
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesAggregateResponseMapEntry_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_AggregateResponseMapEntry_fieldAccessorTable
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesAggregateResponseMapEntry_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.class, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder.class);
+                org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.class, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder.class);
       }
 
-      // Construct using org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.newBuilder()
+      // Construct using org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2127,7 +3053,7 @@ public final class TimeseriesAggregateProtos {
         key_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000001);
         if (valueBuilder_ == null) {
-          value_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.getDefaultInstance();
+          value_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.getDefaultInstance();
         } else {
           valueBuilder_.clear();
         }
@@ -2141,23 +3067,23 @@ public final class TimeseriesAggregateProtos {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_AggregateResponseMapEntry_descriptor;
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.internal_static_TimeseriesAggregateResponseMapEntry_descriptor;
       }
 
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry getDefaultInstanceForType() {
-        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.getDefaultInstance();
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry getDefaultInstanceForType() {
+        return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.getDefaultInstance();
       }
 
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry build() {
-        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry result = buildPartial();
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry build() {
+        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry buildPartial() {
-        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry result = new org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry(this);
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry buildPartial() {
+        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry result = new org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -2178,16 +3104,16 @@ public final class TimeseriesAggregateProtos {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry) {
-          return mergeFrom((org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry)other);
+        if (other instanceof org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry) {
+          return mergeFrom((org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry other) {
-        if (other == org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry other) {
+        if (other == org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.getDefaultInstance()) return this;
         if (other.hasKey()) {
           setKey(other.getKey());
         }
@@ -2214,11 +3140,11 @@ public final class TimeseriesAggregateProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry parsedMessage = null;
+        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry) e.getUnfinishedMessage();
+          parsedMessage = (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -2265,20 +3191,20 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
 
-      // required .AggregateResponseEntry value = 2;
-      private org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry value_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.getDefaultInstance();
+      // required .TimeseriesAggregateResponseEntry value = 2;
+      private org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry value_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntryOrBuilder> valueBuilder_;
+          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntryOrBuilder> valueBuilder_;
       /**
-       * <code>required .AggregateResponseEntry value = 2;</code>
+       * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
        */
       public boolean hasValue() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .AggregateResponseEntry value = 2;</code>
+       * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
        */
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry getValue() {
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry getValue() {
         if (valueBuilder_ == null) {
           return value_;
         } else {
@@ -2286,9 +3212,9 @@ public final class TimeseriesAggregateProtos {
         }
       }
       /**
-       * <code>required .AggregateResponseEntry value = 2;</code>
+       * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
        */
-      public Builder setValue(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry value) {
+      public Builder setValue(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry value) {
         if (valueBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2302,10 +3228,10 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>required .AggregateResponseEntry value = 2;</code>
+       * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
        */
       public Builder setValue(
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.Builder builderForValue) {
+          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.Builder builderForValue) {
         if (valueBuilder_ == null) {
           value_ = builderForValue.build();
           onChanged();
@@ -2316,14 +3242,14 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>required .AggregateResponseEntry value = 2;</code>
+       * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
        */
-      public Builder mergeValue(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry value) {
+      public Builder mergeValue(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry value) {
         if (valueBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
-              value_ != org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.getDefaultInstance()) {
+              value_ != org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.getDefaultInstance()) {
             value_ =
-              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.newBuilder(value_).mergeFrom(value).buildPartial();
+              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.newBuilder(value_).mergeFrom(value).buildPartial();
           } else {
             value_ = value;
           }
@@ -2335,11 +3261,11 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>required .AggregateResponseEntry value = 2;</code>
+       * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
        */
       public Builder clearValue() {
         if (valueBuilder_ == null) {
-          value_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.getDefaultInstance();
+          value_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.getDefaultInstance();
           onChanged();
         } else {
           valueBuilder_.clear();
@@ -2348,17 +3274,17 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>required .AggregateResponseEntry value = 2;</code>
+       * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
        */
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.Builder getValueBuilder() {
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.Builder getValueBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
         return getValueFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .AggregateResponseEntry value = 2;</code>
+       * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
        */
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntryOrBuilder getValueOrBuilder() {
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntryOrBuilder getValueOrBuilder() {
         if (valueBuilder_ != null) {
           return valueBuilder_.getMessageOrBuilder();
         } else {
@@ -2366,14 +3292,14 @@ public final class TimeseriesAggregateProtos {
         }
       }
       /**
-       * <code>required .AggregateResponseEntry value = 2;</code>
+       * <code>required .TimeseriesAggregateResponseEntry value = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntryOrBuilder> 
+          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntryOrBuilder> 
           getValueFieldBuilder() {
         if (valueBuilder_ == null) {
           valueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseEntryOrBuilder>(
+              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntryOrBuilder>(
                   value_,
                   getParentForChildren(),
                   isClean());
@@ -2382,43 +3308,43 @@ public final class TimeseriesAggregateProtos {
         return valueBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:AggregateResponseMapEntry)
+      // @@protoc_insertion_point(builder_scope:TimeseriesAggregateResponseMapEntry)
     }
 
     static {
-      defaultInstance = new AggregateResponseMapEntry(true);
+      defaultInstance = new TimeseriesAggregateResponseMapEntry(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:AggregateResponseMapEntry)
+    // @@protoc_insertion_point(class_scope:TimeseriesAggregateResponseMapEntry)
   }
 
   public interface TimeseriesAggregateResponseOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .AggregateResponseMapEntry entry = 1;
+    // repeated .TimeseriesAggregateResponseMapEntry entry = 1;
     /**
-     * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+     * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
      */
-    java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry> 
+    java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry> 
         getEntryList();
     /**
-     * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+     * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
      */
-    org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry getEntry(int index);
+    org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry getEntry(int index);
     /**
-     * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+     * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
      */
     int getEntryCount();
     /**
-     * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+     * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
      */
-    java.util.List<? extends org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntryOrBuilder> 
+    java.util.List<? extends org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntryOrBuilder> 
         getEntryOrBuilderList();
     /**
-     * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+     * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
      */
-    org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntryOrBuilder getEntryOrBuilder(
+    org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntryOrBuilder getEntryOrBuilder(
         int index);
   }
   /**
@@ -2474,10 +3400,10 @@ public final class TimeseriesAggregateProtos {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                entry_ = new java.util.ArrayList<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry>();
+                entry_ = new java.util.ArrayList<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              entry_.add(input.readMessage(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.PARSER, extensionRegistry));
+              entry_.add(input.readMessage(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.PARSER, extensionRegistry));
               break;
             }
           }
@@ -2522,38 +3448,38 @@ public final class TimeseriesAggregateProtos {
       return PARSER;
     }
 
-    // repeated .AggregateResponseMapEntry entry = 1;
+    // repeated .TimeseriesAggregateResponseMapEntry entry = 1;
     public static final int ENTRY_FIELD_NUMBER = 1;
-    private java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry> entry_;
+    private java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry> entry_;
     /**
-     * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+     * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
      */
-    public java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry> getEntryList() {
+    public java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry> getEntryList() {
       return entry_;
     }
     /**
-     * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+     * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
      */
-    public java.util.List<? extends org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntryOrBuilder> 
+    public java.util.List<? extends org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntryOrBuilder> 
         getEntryOrBuilderList() {
       return entry_;
     }
     /**
-     * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+     * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
      */
     public int getEntryCount() {
       return entry_.size();
     }
     /**
-     * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+     * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
      */
-    public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry getEntry(int index) {
+    public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry getEntry(int index) {
       return entry_.get(index);
     }
     /**
-     * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+     * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
      */
-    public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntryOrBuilder getEntryOrBuilder(
+    public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntryOrBuilder getEntryOrBuilder(
         int index) {
       return entry_.get(index);
     }
@@ -2863,23 +3789,23 @@ public final class TimeseriesAggregateProtos {
       }
       private int bitField0_;
 
-      // repeated .AggregateResponseMapEntry entry = 1;
-      private java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry> entry_ =
+      // repeated .TimeseriesAggregateResponseMapEntry entry = 1;
+      private java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry> entry_ =
         java.util.Collections.emptyList();
       private void ensureEntryIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          entry_ = new java.util.ArrayList<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry>(entry_);
+          entry_ = new java.util.ArrayList<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry>(entry_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntryOrBuilder> entryBuilder_;
+          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntryOrBuilder> entryBuilder_;
 
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
-      public java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry> getEntryList() {
+      public java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry> getEntryList() {
         if (entryBuilder_ == null) {
           return java.util.Collections.unmodifiableList(entry_);
         } else {
@@ -2887,7 +3813,7 @@ public final class TimeseriesAggregateProtos {
         }
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
       public int getEntryCount() {
         if (entryBuilder_ == null) {
@@ -2897,9 +3823,9 @@ public final class TimeseriesAggregateProtos {
         }
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry getEntry(int index) {
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry getEntry(int index) {
         if (entryBuilder_ == null) {
           return entry_.get(index);
         } else {
@@ -2907,10 +3833,10 @@ public final class TimeseriesAggregateProtos {
         }
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
       public Builder setEntry(
-          int index, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry value) {
+          int index, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry value) {
         if (entryBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2924,10 +3850,10 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
       public Builder setEntry(
-          int index, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder builderForValue) {
+          int index, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder builderForValue) {
         if (entryBuilder_ == null) {
           ensureEntryIsMutable();
           entry_.set(index, builderForValue.build());
@@ -2938,9 +3864,9 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
-      public Builder addEntry(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry value) {
+      public Builder addEntry(org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry value) {
         if (entryBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2954,10 +3880,10 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
       public Builder addEntry(
-          int index, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry value) {
+          int index, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry value) {
         if (entryBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2971,10 +3897,10 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
       public Builder addEntry(
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder builderForValue) {
+          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder builderForValue) {
         if (entryBuilder_ == null) {
           ensureEntryIsMutable();
           entry_.add(builderForValue.build());
@@ -2985,10 +3911,10 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
       public Builder addEntry(
-          int index, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder builderForValue) {
+          int index, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder builderForValue) {
         if (entryBuilder_ == null) {
           ensureEntryIsMutable();
           entry_.add(index, builderForValue.build());
@@ -2999,10 +3925,10 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
       public Builder addAllEntry(
-          java.lang.Iterable<? extends org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry> values) {
+          java.lang.Iterable<? extends org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry> values) {
         if (entryBuilder_ == null) {
           ensureEntryIsMutable();
           super.addAll(values, entry_);
@@ -3013,7 +3939,7 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
       public Builder clearEntry() {
         if (entryBuilder_ == null) {
@@ -3026,7 +3952,7 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
       public Builder removeEntry(int index) {
         if (entryBuilder_ == null) {
@@ -3039,16 +3965,16 @@ public final class TimeseriesAggregateProtos {
         return this;
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder getEntryBuilder(
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder getEntryBuilder(
           int index) {
         return getEntryFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntryOrBuilder getEntryOrBuilder(
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntryOrBuilder getEntryOrBuilder(
           int index) {
         if (entryBuilder_ == null) {
           return entry_.get(index);  } else {
@@ -3056,9 +3982,9 @@ public final class TimeseriesAggregateProtos {
         }
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
-      public java.util.List<? extends org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntryOrBuilder> 
+      public java.util.List<? extends org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntryOrBuilder> 
            getEntryOrBuilderList() {
         if (entryBuilder_ != null) {
           return entryBuilder_.getMessageOrBuilderList();
@@ -3067,33 +3993,33 @@ public final class TimeseriesAggregateProtos {
         }
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder addEntryBuilder() {
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder addEntryBuilder() {
         return getEntryFieldBuilder().addBuilder(
-            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.getDefaultInstance());
+            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.getDefaultInstance());
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder addEntryBuilder(
+      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder addEntryBuilder(
           int index) {
         return getEntryFieldBuilder().addBuilder(
-            index, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.getDefaultInstance());
+            index, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.getDefaultInstance());
       }
       /**
-       * <code>repeated .AggregateResponseMapEntry entry = 1;</code>
+       * <code>repeated .TimeseriesAggregateResponseMapEntry entry = 1;</code>
        */
-      public java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder> 
+      public java.util.List<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder> 
            getEntryBuilderList() {
         return getEntryFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntryOrBuilder> 
+          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntryOrBuilder> 
           getEntryFieldBuilder() {
         if (entryBuilder_ == null) {
           entryBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.AggregateResponseMapEntryOrBuilder>(
+              org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry.Builder, org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntryOrBuilder>(
                   entry_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
@@ -3783,15 +4709,20 @@ public final class TimeseriesAggregateProtos {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_TimeseriesAggregateRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_AggregateResponseEntry_descriptor;
+    internal_static_TimeseriesRange_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_AggregateResponseEntry_fieldAccessorTable;
+      internal_static_TimeseriesRange_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_AggregateResponseMapEntry_descriptor;
+    internal_static_TimeseriesAggregateResponseEntry_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_AggregateResponseMapEntry_fieldAccessorTable;
+      internal_static_TimeseriesAggregateResponseEntry_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_TimeseriesAggregateResponseMapEntry_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_TimeseriesAggregateResponseMapEntry_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_TimeseriesAggregateResponse_descriptor;
   private static
@@ -3807,31 +4738,35 @@ public final class TimeseriesAggregateProtos {
   static {
     java.lang.String[] descriptorData = {
       "\n\031TimeseriesAggregate.proto\032\014Client.prot" +
-      "o\"\223\001\n\032TimeseriesAggregateRequest\022\036\n\026inte" +
+      "o\"\265\001\n\032TimeseriesAggregateRequest\022\036\n\026inte" +
       "rpreter_class_name\030\001 \002(\t\022\023\n\004scan\030\002 \002(\0132\005" +
       ".Scan\022\"\n\032interpreter_specific_bytes\030\003 \001(" +
-      "\014\022\034\n\024time_nterval_seconds\030\004 \002(\005\"A\n\026Aggre" +
-      "gateResponseEntry\022\022\n\nfirst_part\030\001 \003(\014\022\023\n" +
-      "\013second_part\030\002 \001(\014\"P\n\031AggregateResponseM" +
-      "apEntry\022\013\n\003key\030\001 \002(\014\022&\n\005value\030\002 \002(\0132\027.Ag" +
-      "gregateResponseEntry\"H\n\033TimeseriesAggreg" +
-      "ateResponse\022)\n\005entry\030\001 \003(\0132\032.AggregateRe",
-      "sponseMapEntry2\205\004\n\032TimeseriesAggregateSe" +
-      "rvice\022C\n\006GetMax\022\033.TimeseriesAggregateReq" +
-      "uest\032\034.TimeseriesAggregateResponse\022C\n\006Ge" +
-      "tMin\022\033.TimeseriesAggregateRequest\032\034.Time" +
-      "seriesAggregateResponse\022C\n\006GetSum\022\033.Time" +
-      "seriesAggregateRequest\032\034.TimeseriesAggre" +
-      "gateResponse\022F\n\tGetRowNum\022\033.TimeseriesAg" +
-      "gregateRequest\032\034.TimeseriesAggregateResp" +
-      "onse\022C\n\006GetAvg\022\033.TimeseriesAggregateRequ" +
-      "est\032\034.TimeseriesAggregateResponse\022C\n\006Get",
-      "Std\022\033.TimeseriesAggregateRequest\032\034.Times" +
-      "eriesAggregateResponse\022F\n\tGetMedian\022\033.Ti" +
-      "meseriesAggregateRequest\032\034.TimeseriesAgg" +
-      "regateResponseBO\n*org.apache.hadoop.hbas" +
-      "e.protobuf.generatedB\031TimeseriesAggregat" +
-      "eProtosH\001\210\001\001\240\001\001"
+      "\014\022\035\n\025time_interval_seconds\030\004 \002(\005\022\037\n\005rang" +
+      "e\030\005 \001(\0132\020.TimeseriesRange\"m\n\017TimeseriesR" +
+      "ange\022\031\n\021key_timestamp_min\030\001 \002(\005\022\031\n\021key_t" +
+      "imestamp_max\030\002 \002(\005\022$\n\034key_timestamp_filt" +
+      "er_pattern\030\003 \002(\t\"K\n TimeseriesAggregateR" +
+      "esponseEntry\022\022\n\nfirst_part\030\001 \003(\014\022\023\n\013seco",
+      "nd_part\030\002 \001(\014\"d\n#TimeseriesAggregateResp" +
+      "onseMapEntry\022\013\n\003key\030\001 \002(\014\0220\n\005value\030\002 \002(\013" +
+      "2!.TimeseriesAggregateResponseEntry\"R\n\033T" +
+      "imeseriesAggregateResponse\0223\n\005entry\030\001 \003(" +
+      "\0132$.TimeseriesAggregateResponseMapEntry2" +
+      "\205\004\n\032TimeseriesAggregateService\022C\n\006GetMax" +
+      "\022\033.TimeseriesAggregateRequest\032\034.Timeseri" +
+      "esAggregateResponse\022C\n\006GetMin\022\033.Timeseri" +
+      "esAggregateRequest\032\034.TimeseriesAggregate" +
+      "Response\022C\n\006GetSum\022\033.TimeseriesAggregate",
+      "Request\032\034.TimeseriesAggregateResponse\022F\n" +
+      "\tGetRowNum\022\033.TimeseriesAggregateRequest\032" +
+      "\034.TimeseriesAggregateResponse\022C\n\006GetAvg\022" +
+      "\033.TimeseriesAggregateRequest\032\034.Timeserie" +
+      "sAggregateResponse\022C\n\006GetStd\022\033.Timeserie" +
+      "sAggregateRequest\032\034.TimeseriesAggregateR" +
+      "esponse\022F\n\tGetMedian\022\033.TimeseriesAggrega" +
+      "teRequest\032\034.TimeseriesAggregateResponseB" +
+      "O\n*org.apache.hadoop.hbase.protobuf.gene" +
+      "ratedB\031TimeseriesAggregateProtosH\001\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3843,21 +4778,27 @@ public final class TimeseriesAggregateProtos {
           internal_static_TimeseriesAggregateRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_TimeseriesAggregateRequest_descriptor,
-              new java.lang.String[] { "InterpreterClassName", "Scan", "InterpreterSpecificBytes", "TimeNtervalSeconds", });
-          internal_static_AggregateResponseEntry_descriptor =
+              new java.lang.String[] { "InterpreterClassName", "Scan", "InterpreterSpecificBytes", "TimeIntervalSeconds", "Range", });
+          internal_static_TimeseriesRange_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_AggregateResponseEntry_fieldAccessorTable = new
+          internal_static_TimeseriesRange_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_AggregateResponseEntry_descriptor,
-              new java.lang.String[] { "FirstPart", "SecondPart", });
-          internal_static_AggregateResponseMapEntry_descriptor =
+              internal_static_TimeseriesRange_descriptor,
+              new java.lang.String[] { "KeyTimestampMin", "KeyTimestampMax", "KeyTimestampFilterPattern", });
+          internal_static_TimeseriesAggregateResponseEntry_descriptor =
             getDescriptor().getMessageTypes().get(2);
-          internal_static_AggregateResponseMapEntry_fieldAccessorTable = new
+          internal_static_TimeseriesAggregateResponseEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_AggregateResponseMapEntry_descriptor,
+              internal_static_TimeseriesAggregateResponseEntry_descriptor,
+              new java.lang.String[] { "FirstPart", "SecondPart", });
+          internal_static_TimeseriesAggregateResponseMapEntry_descriptor =
+            getDescriptor().getMessageTypes().get(3);
+          internal_static_TimeseriesAggregateResponseMapEntry_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_TimeseriesAggregateResponseMapEntry_descriptor,
               new java.lang.String[] { "Key", "Value", });
           internal_static_TimeseriesAggregateResponse_descriptor =
-            getDescriptor().getMessageTypes().get(3);
+            getDescriptor().getMessageTypes().get(4);
           internal_static_TimeseriesAggregateResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_TimeseriesAggregateResponse_descriptor,

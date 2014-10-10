@@ -34,10 +34,17 @@ message TimeseriesAggregateRequest {
   required string interpreter_class_name = 1;
   required Scan scan = 2;
   optional bytes  interpreter_specific_bytes = 3;
-  required int32 time_nterval_seconds = 4;
+  required int32 time_interval_seconds = 4;
+  optional TimeseriesRange range = 5; 
 }
 
-message AggregateResponseEntry {
+message TimeseriesRange {
+  required int32 key_timestamp_min = 1;
+  required int32 key_timestamp_max = 2;
+  required string key_timestamp_filter_pattern = 3;
+}
+
+message TimeseriesAggregateResponseEntry {
   /**
    * The AggregateService methods all have a response that either is a Pair
    * or a simple object. When it is a Pair both first_part and second_part
@@ -49,13 +56,13 @@ message AggregateResponseEntry {
   optional bytes second_part = 2;
 }
 
-message AggregateResponseMapEntry {
+message TimeseriesAggregateResponseMapEntry {
   required bytes key = 1;
-  required AggregateResponseEntry value = 2;
+  required TimeseriesAggregateResponseEntry value = 2;
 }
 
 message TimeseriesAggregateResponse {
-  repeated AggregateResponseMapEntry entry = 1;
+  repeated TimeseriesAggregateResponseMapEntry entry = 1;
 }
 
 /** Refer to the AggregateImplementation class for an overview of the 
