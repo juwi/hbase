@@ -2668,15 +2668,15 @@ public final class TimeseriesAggregateProtos {
   public interface TimeseriesAggregateResponseMapEntryOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required bytes key = 1;
+    // required int64 key = 1;
     /**
-     * <code>required bytes key = 1;</code>
+     * <code>required int64 key = 1;</code>
      */
     boolean hasKey();
     /**
-     * <code>required bytes key = 1;</code>
+     * <code>required int64 key = 1;</code>
      */
-    com.google.protobuf.ByteString getKey();
+    long getKey();
 
     // required .TimeseriesAggregateResponseEntry value = 2;
     /**
@@ -2743,9 +2743,9 @@ public final class TimeseriesAggregateProtos {
               }
               break;
             }
-            case 10: {
+            case 8: {
               bitField0_ |= 0x00000001;
-              key_ = input.readBytes();
+              key_ = input.readInt64();
               break;
             }
             case 18: {
@@ -2801,19 +2801,19 @@ public final class TimeseriesAggregateProtos {
     }
 
     private int bitField0_;
-    // required bytes key = 1;
+    // required int64 key = 1;
     public static final int KEY_FIELD_NUMBER = 1;
-    private com.google.protobuf.ByteString key_;
+    private long key_;
     /**
-     * <code>required bytes key = 1;</code>
+     * <code>required int64 key = 1;</code>
      */
     public boolean hasKey() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required bytes key = 1;</code>
+     * <code>required int64 key = 1;</code>
      */
-    public com.google.protobuf.ByteString getKey() {
+    public long getKey() {
       return key_;
     }
 
@@ -2840,7 +2840,7 @@ public final class TimeseriesAggregateProtos {
     }
 
     private void initFields() {
-      key_ = com.google.protobuf.ByteString.EMPTY;
+      key_ = 0L;
       value_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
@@ -2864,7 +2864,7 @@ public final class TimeseriesAggregateProtos {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, key_);
+        output.writeInt64(1, key_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeMessage(2, value_);
@@ -2880,7 +2880,7 @@ public final class TimeseriesAggregateProtos {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, key_);
+          .computeInt64Size(1, key_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
@@ -2911,8 +2911,8 @@ public final class TimeseriesAggregateProtos {
       boolean result = true;
       result = result && (hasKey() == other.hasKey());
       if (hasKey()) {
-        result = result && getKey()
-            .equals(other.getKey());
+        result = result && (getKey()
+            == other.getKey());
       }
       result = result && (hasValue() == other.hasValue());
       if (hasValue()) {
@@ -2934,7 +2934,7 @@ public final class TimeseriesAggregateProtos {
       hash = (19 * hash) + getDescriptorForType().hashCode();
       if (hasKey()) {
         hash = (37 * hash) + KEY_FIELD_NUMBER;
-        hash = (53 * hash) + getKey().hashCode();
+        hash = (53 * hash) + hashLong(getKey());
       }
       if (hasValue()) {
         hash = (37 * hash) + VALUE_FIELD_NUMBER;
@@ -3050,7 +3050,7 @@ public final class TimeseriesAggregateProtos {
 
       public Builder clear() {
         super.clear();
-        key_ = com.google.protobuf.ByteString.EMPTY;
+        key_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
         if (valueBuilder_ == null) {
           value_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseEntry.getDefaultInstance();
@@ -3155,38 +3155,35 @@ public final class TimeseriesAggregateProtos {
       }
       private int bitField0_;
 
-      // required bytes key = 1;
-      private com.google.protobuf.ByteString key_ = com.google.protobuf.ByteString.EMPTY;
+      // required int64 key = 1;
+      private long key_ ;
       /**
-       * <code>required bytes key = 1;</code>
+       * <code>required int64 key = 1;</code>
        */
       public boolean hasKey() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required bytes key = 1;</code>
+       * <code>required int64 key = 1;</code>
        */
-      public com.google.protobuf.ByteString getKey() {
+      public long getKey() {
         return key_;
       }
       /**
-       * <code>required bytes key = 1;</code>
+       * <code>required int64 key = 1;</code>
        */
-      public Builder setKey(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+      public Builder setKey(long value) {
+        bitField0_ |= 0x00000001;
         key_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required bytes key = 1;</code>
+       * <code>required int64 key = 1;</code>
        */
       public Builder clearKey() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        key_ = getDefaultInstance().getKey();
+        key_ = 0L;
         onChanged();
         return this;
       }
@@ -4748,7 +4745,7 @@ public final class TimeseriesAggregateProtos {
       "er_pattern\030\003 \002(\t\"K\n TimeseriesAggregateR" +
       "esponseEntry\022\022\n\nfirst_part\030\001 \003(\014\022\023\n\013seco",
       "nd_part\030\002 \001(\014\"d\n#TimeseriesAggregateResp" +
-      "onseMapEntry\022\013\n\003key\030\001 \002(\014\0220\n\005value\030\002 \002(\013" +
+      "onseMapEntry\022\013\n\003key\030\001 \002(\003\0220\n\005value\030\002 \002(\013" +
       "2!.TimeseriesAggregateResponseEntry\"R\n\033T" +
       "imeseriesAggregateResponse\0223\n\005entry\030\001 \003(" +
       "\0132$.TimeseriesAggregateResponseMapEntry2" +

@@ -35,7 +35,7 @@ message TimeseriesAggregateRequest {
   required Scan scan = 2;
   optional bytes  interpreter_specific_bytes = 3;
   required int32 time_interval_seconds = 4;
-  optional TimeseriesRange range = 5; 
+  optional TimeseriesRange range = 5;
 }
 
 message TimeseriesRange {
@@ -51,13 +51,13 @@ message TimeseriesAggregateResponseEntry {
    * have defined values (and the second_part is not present in the response
    * when the response is not a pair). Refer to the AggregateImplementation 
    * class for an overview of the AggregateResponse object constructions. 
-   */ 
+   */
   repeated bytes first_part = 1;
   optional bytes second_part = 2;
 }
 
 message TimeseriesAggregateResponseMapEntry {
-  required bytes key = 1;
+  required int64 key = 1;
   required TimeseriesAggregateResponseEntry value = 2;
 }
 
@@ -65,14 +65,14 @@ message TimeseriesAggregateResponse {
   repeated TimeseriesAggregateResponseMapEntry entry = 1;
 }
 
-/** Refer to the AggregateImplementation class for an overview of the 
+/** Refer to the AggregateImplementation class for an overview of the
  *  AggregateService method implementations and their functionality.
  */
 service TimeseriesAggregateService {
   rpc GetMax (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
   rpc GetMin (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
   rpc GetSum (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
-  rpc GetRowNum (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
+//  rpc GetRowNum (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse); Row num will be unsupported for now as I do not see the need
   rpc GetAvg (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
   rpc GetStd (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
   rpc GetMedian (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
