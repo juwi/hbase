@@ -2,6 +2,8 @@ package org.apache.hadoop.hbase.client.coprocessor;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -19,6 +21,9 @@ import org.apache.hadoop.hbase.coprocessor.ColumnInterpreter;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
 import org.apache.hadoop.hbase.ipc.ServerRpcController;
 import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
+import org.apache.hadoop.hbase.protobuf.generated.AggregateProtos.AggregateRequest;
+import org.apache.hadoop.hbase.protobuf.generated.AggregateProtos.AggregateResponse;
+import org.apache.hadoop.hbase.protobuf.generated.AggregateProtos.AggregateService;
 import org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest;
 import org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse;
 import org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry;
@@ -517,33 +522,37 @@ public class TimeseriesAggregationClient {
 				List<TimeseriesAggregateResponseMapEntry> results = result
 						.getEntryList();
 				for (TimeseriesAggregateResponseMapEntry entry : results) {
-					ByteString b = entry.getValue().getFirstPart(0);
-					T t = null;
-					try {
-						t = ProtobufUtil.getParsedGenericInstance(
-								ci.getClass(), 4, b);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					S s = ci.getPromotedValueFromProto(t);
 
-					ByteBuffer bb = ByteBuffer.allocate(8).put(
-							getBytesFromResponse(entry.getValue()
-									.getSecondPart()));
-					bb.rewind();
-					if (averages.containsKey(entry.getKey())) {
-						S sum = averages.get(entry.getKey()).getFirst();
-						Long rowCount = averages.get(entry.getKey())
-								.getSecond();
-						averages.put(
-								entry.getKey(),
-								new Pair<S, Long>(ci.add(sum, s), rowCount
-										+ bb.getLong()));
-					} else {
-						if (entry.getValue().getFirstPartCount() == 0) {
+					if (entry.getValue().getFirstPartCount() == 0) {
+						if (!averages.containsKey(entry.getKey())) {
 							averages.put(entry.getKey(), new Pair<S, Long>(
 									null, 0L));
+						}
+					} else {
+
+						ByteString b = entry.getValue().getFirstPart(0);
+						T t = null;
+						try {
+							t = ProtobufUtil.getParsedGenericInstance(
+									ci.getClass(), 4, b);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						S s = ci.getPromotedValueFromProto(t);
+
+						ByteBuffer bb = ByteBuffer.allocate(8).put(
+								getBytesFromResponse(entry.getValue()
+										.getSecondPart()));
+						bb.rewind();
+
+						if (averages.containsKey(entry.getKey())) {
+							S sum = averages.get(entry.getKey()).getFirst();
+							Long rowCount = averages.get(entry.getKey())
+									.getSecond();
+							averages.put(entry.getKey(),
+									new Pair<S, Long>(ci.add(sum, s), rowCount
+											+ bb.getLong()));
 						} else {
 							averages.put(entry.getKey(), new Pair<S, Long>(s,
 									bb.getLong()));
@@ -596,14 +605,175 @@ public class TimeseriesAggregationClient {
 			final TableName tableName,
 			final ColumnInterpreter<R, S, P, Q, T> ci, Scan scan)
 			throws Throwable {
-		ConcurrentSkipListMap<Long, Pair<S, Long>> p = getAvgArgs(tableName,
-				ci, scan);
-		ConcurrentSkipListMap<Long, Double> avg = new ConcurrentSkipListMap<Long, Double>();
-		for (Map.Entry<Long, Pair<S, Long>> entry : p.entrySet()) {
-			avg.put(entry.getKey(), ci.divideForAvg(
-					entry.getValue().getFirst(), entry.getValue().getSecond()));
+		Table table = null;
+		try {
+			table = new HTable(conf, tableName);
+			return avg(table, ci, scan);
+		} finally {
+			if (table != null) {
+				table.close();
+			}
 		}
-		return avg;
+	}
+
+	/**
+	 * It computes a global standard deviation for a given column and its value.
+	 * Standard deviation is square root of (average of squares -
+	 * average*average). From individual regions, it obtains sum, square sum and
+	 * number of rows. With these, the above values are computed to get the
+	 * global std.
+	 * 
+	 * @param table
+	 * @param scan
+	 * @return standard deviations
+	 * @throws Throwable
+	 */
+	private <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, Pair<List<S>, Long>> getStdArgs(
+			final Table table, final ColumnInterpreter<R, S, P, Q, T> ci,
+			final Scan scan) throws Throwable {
+		final TimeseriesAggregateRequest requestArg = validateArgAndGetPB(scan,
+				ci, false);
+		class StdCallback implements
+				Batch.Callback<TimeseriesAggregateResponse> {
+			ConcurrentSkipListMap<Long, Pair<List<S>, Long>> stds = new ConcurrentSkipListMap<>();
+
+			public synchronized ConcurrentSkipListMap<Long, Pair<List<S>, Long>> getStdParams() {
+				return stds;
+			}
+
+			@Override
+			public synchronized void update(byte[] region, byte[] row,
+					TimeseriesAggregateResponse result) {
+				List<TimeseriesAggregateResponseMapEntry> results = result
+						.getEntryList();
+				for (TimeseriesAggregateResponseMapEntry entry : results) {
+					if (entry.getValue().getFirstPartCount() == 0) {
+						if (!stds.containsKey(entry.getKey())) {
+							stds.put(entry.getKey(),
+									new Pair<List<S>, Long>(null, 0L));
+						}
+					} else {
+						List<S> list = new ArrayList<S>();
+						for (int i = 0; i < entry.getValue()
+								.getFirstPartCount(); i++) {
+							ByteString b = entry.getValue().getFirstPart(i);
+							T t = null;
+							try {
+								t = ProtobufUtil.getParsedGenericInstance(
+										ci.getClass(), 4, b);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							S s = ci.getPromotedValueFromProto(t);
+							list.add(s);
+						}
+
+						ByteBuffer bb = ByteBuffer.allocate(8).put(
+								getBytesFromResponse(entry.getValue()
+										.getSecondPart()));
+						bb.rewind();
+
+						if (stds.containsKey(entry.getKey())) {
+							List<S> currentList = stds.get(entry.getKey())
+									.getFirst();
+
+							S sumVal = ci.add(currentList.get(0), list.get(0));
+							S sumSqVal = ci.add(currentList.get(1), list.get(1));
+							long count = bb.getLong()
+									+ stds.get(entry.getKey()).getSecond();
+
+							stds.put(entry.getKey(), new Pair<List<S>, Long>(
+									Arrays.asList(sumVal, sumSqVal), count));
+						} else {
+							stds.put(entry.getKey(), new Pair<List<S>, Long>(
+									list, bb.getLong()));
+						}
+					}
+				}
+			}
+		}
+		StdCallback stdCallback = new StdCallback();
+		table.coprocessorService(
+				TimeseriesAggregateService.class,
+				scan.getStartRow(),
+				scan.getStopRow(),
+				new Batch.Call<TimeseriesAggregateService, TimeseriesAggregateResponse>() {
+					@Override
+					public TimeseriesAggregateResponse call(
+							TimeseriesAggregateService instance)
+							throws IOException {
+						ServerRpcController controller = new ServerRpcController();
+						BlockingRpcCallback<TimeseriesAggregateResponse> rpcCallback = new BlockingRpcCallback<TimeseriesAggregateResponse>();
+						instance.getStd(controller, requestArg, rpcCallback);
+						TimeseriesAggregateResponse response = rpcCallback
+								.get();
+						if (controller.failedOnException()) {
+							throw controller.getFailedOn();
+						}
+						if (response.getEntryCount() > 0) {
+							return response;
+						}
+						return null;
+					}
+				}, stdCallback);
+		return stdCallback.getStdParams();
+	}
+
+	/**
+	 * This is the client side interface/handle for calling the std method for a
+	 * given cf-cq combination. It was necessary to add one more call stack as
+	 * its return type should be a decimal value, irrespective of what
+	 * columninterpreter says. So, this methods collects the necessary
+	 * parameters to compute the std and returns the double value.
+	 * 
+	 * @param tableName
+	 * @param ci
+	 * @param scan
+	 * @return <R, S>
+	 * @throws Throwable
+	 */
+	public <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, Double> std(
+			final TableName tableName, ColumnInterpreter<R, S, P, Q, T> ci,
+			Scan scan) throws Throwable {
+		Table table = null;
+		try {
+			table = new HTable(conf, tableName);
+			return std(table, ci, scan);
+		} finally {
+			if (table != null) {
+				table.close();
+			}
+		}
+	}
+
+	/**
+	 * This is the client side interface/handle for calling the std method for a
+	 * given cf-cq combination. It was necessary to add one more call stack as
+	 * its return type should be a decimal value, irrespective of what
+	 * columninterpreter says. So, this methods collects the necessary
+	 * parameters to compute the std and returns the double value.
+	 * 
+	 * @param table
+	 * @param ci
+	 * @param scan
+	 * @return <R, S>
+	 * @throws Throwable
+	 */
+	public <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, Double> std(
+			final Table table, ColumnInterpreter<R, S, P, Q, T> ci, Scan scan)
+			throws Throwable {
+		ConcurrentSkipListMap<Long, Pair<List<S>, Long>> p = getStdArgs(table, ci, scan);
+		ConcurrentSkipListMap<Long, Double> results = new ConcurrentSkipListMap<Long, Double>();
+		for(Map.Entry<Long, Pair<List<S>, Long>> entry : p.entrySet()) {
+			double res = 0d;
+			double avg = ci.divideForAvg(entry.getValue().getFirst().get(0), entry.getValue().getSecond());
+			double avgOfSumSq = ci.divideForAvg(entry.getValue().getFirst().get(1), entry.getValue().getSecond());
+			res = avgOfSumSq - (avg) * (avg);
+			res = Math.pow(res, 0.5);
+			results.put(entry.getKey(), res);
+		}
+		return results;
 	}
 
 	/**
