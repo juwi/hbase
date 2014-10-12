@@ -72,7 +72,7 @@ service TimeseriesAggregateService {
   rpc GetMax (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
   rpc GetMin (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
   rpc GetSum (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
-//  rpc GetRowNum (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse); Row num will be unsupported for now as I do not see the need
+  rpc GetRowNum (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
   rpc GetAvg (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
   rpc GetStd (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);
   rpc GetMedian (TimeseriesAggregateRequest) returns (TimeseriesAggregateResponse);

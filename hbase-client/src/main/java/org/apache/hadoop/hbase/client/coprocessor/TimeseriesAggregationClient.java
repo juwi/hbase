@@ -1,7 +1,9 @@
 package org.apache.hadoop.hbase.client.coprocessor;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.apache.commons.logging.Log;
@@ -22,6 +24,7 @@ import org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.Time
 import org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponseMapEntry;
 import org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateService;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.util.Pair;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
@@ -75,13 +78,13 @@ public class TimeseriesAggregationClient {
 	 * @param tableName
 	 * @param ci
 	 * @param scan
-	 * @return max val <R> (Will come as proto from region needs to be passed
-	 *         out as ConcurrentSkipListMap)
+	 * @return max val ConcurrentSkipListMap<Long, R> (Will come as proto from
+	 *         region needs to be passed out as ConcurrentSkipListMap)
 	 * @throws Throwable
 	 *             The caller is supposed to handle the exception as they are
 	 *             thrown & propagated to it.
 	 */
-	public <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap max(
+	public <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, R> max(
 			final TableName tableName,
 			final ColumnInterpreter<R, S, P, Q, T> ci, final Scan scan)
 			throws Throwable {
@@ -104,8 +107,8 @@ public class TimeseriesAggregationClient {
 	 * @param table
 	 * @param ci
 	 * @param scan
-	 * @return max val <R> (Will come as proto from region needs to be passed
-	 *         out as ConcurrentSkipListMap)
+	 * @return max val ConcurrentSkipListMap<Long, R> (Will come as proto from
+	 *         region needs to be passed out as ConcurrentSkipListMap)
 	 * @throws Throwable
 	 *             The caller is supposed to handle the exception as they are
 	 *             thrown & propagated to it.
@@ -115,7 +118,8 @@ public class TimeseriesAggregationClient {
 			final Scan scan) throws Throwable {
 		final TimeseriesAggregateRequest requestArg = validateArgAndGetPB(scan,
 				ci, false);
-		class MaxCallBack implements Batch.Callback<R> {
+		class MaxCallBack implements
+				Batch.Callback<TimeseriesAggregateResponse> {
 			ConcurrentSkipListMap<Long, R> max = new ConcurrentSkipListMap<>();
 
 			ConcurrentSkipListMap<Long, R> getMax() {
@@ -123,9 +127,8 @@ public class TimeseriesAggregationClient {
 			}
 
 			@Override
-			public synchronized void update(byte[] region, byte[] row, R result) {
-				// max = (max == null || (result != null && ci.compare(max,
-				// result) < 0)) ? result : max;
+			public synchronized void update(byte[] region, byte[] row,
+					TimeseriesAggregateResponse result) {
 				List<TimeseriesAggregateResponseMapEntry> results = ((TimeseriesAggregateResponse) result)
 						.getEntryList();
 				for (TimeseriesAggregateResponseMapEntry entry : results) {
@@ -159,11 +162,14 @@ public class TimeseriesAggregationClient {
 		}
 
 		MaxCallBack aMaxCallBack = new MaxCallBack();
-		table.coprocessorService(TimeseriesAggregateService.class,
-				scan.getStartRow(), scan.getStopRow(),
-				new Batch.Call<TimeseriesAggregateService, R>() {
+		table.coprocessorService(
+				TimeseriesAggregateService.class,
+				scan.getStartRow(),
+				scan.getStopRow(),
+				new Batch.Call<TimeseriesAggregateService, TimeseriesAggregateResponse>() {
 					@Override
-					public R call(TimeseriesAggregateService instance)
+					public TimeseriesAggregateResponse call(
+							TimeseriesAggregateService instance)
 							throws IOException {
 						ServerRpcController controller = new ServerRpcController();
 						BlockingRpcCallback<TimeseriesAggregateResponse> rpcCallback = new BlockingRpcCallback<TimeseriesAggregateResponse>();
@@ -174,7 +180,7 @@ public class TimeseriesAggregationClient {
 							throw controller.getFailedOn();
 						}
 						if (response.getEntryCount() > 0) {
-							return (R) response;
+							return response;
 						}
 						return null;
 					}
@@ -222,4 +228,419 @@ public class TimeseriesAggregationClient {
 		return requestBuilder.build();
 	}
 
+	/**
+	 * It gives the minimum value of a column for a given column family for the
+	 * given range. In case qualifier is null, a min of all values for the given
+	 * family is returned.
+	 * 
+	 * @param tableName
+	 * @param ci
+	 * @param scan
+	 * @return min val ConcurrentSkipListMap<Long, R> (Will come as proto from
+	 *         region needs to be passed out as ConcurrentSkipListMap)
+	 * @throws Throwable
+	 *             The caller is supposed to handle the exception as they are
+	 *             thrown & propagated to it.
+	 */
+	public <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, R> min(
+			final TableName tableName,
+			final ColumnInterpreter<R, S, P, Q, T> ci, final Scan scan)
+			throws Throwable {
+		Table table = null;
+		try {
+			table = new HTable(conf, tableName);
+			return min(table, ci, scan);
+		} finally {
+			if (table != null) {
+				table.close();
+			}
+		}
+	}
+
+	/**
+	 * It gives the minimum value of a column for a given column family for the
+	 * given range. In case qualifier is null, a min of all values for the given
+	 * family is returned.
+	 * 
+	 * @param table
+	 * @param ci
+	 * @param scan
+	 * @return min val ConcurrentSkipListMap<Long, R> (Will come as proto from
+	 *         region needs to be passed out as ConcurrentSkipListMap)
+	 * @throws Throwable
+	 *             The caller is supposed to handle the exception as they are
+	 *             thrown & propagated to it.
+	 */
+	public <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, R> min(
+			final Table table, final ColumnInterpreter<R, S, P, Q, T> ci,
+			final Scan scan) throws Throwable {
+		final TimeseriesAggregateRequest requestArg = validateArgAndGetPB(scan,
+				ci, false);
+		class MaxCallBack implements
+				Batch.Callback<TimeseriesAggregateResponse> {
+			ConcurrentSkipListMap<Long, R> min = new ConcurrentSkipListMap<>();
+
+			ConcurrentSkipListMap<Long, R> getMax() {
+				return min;
+			}
+
+			@Override
+			public synchronized void update(byte[] region, byte[] row,
+					TimeseriesAggregateResponse result) {
+				List<TimeseriesAggregateResponseMapEntry> results = ((TimeseriesAggregateResponse) result)
+						.getEntryList();
+				for (TimeseriesAggregateResponseMapEntry entry : results) {
+					R candidate;
+					if (entry.getValue().getFirstPartCount() > 0) {
+						ByteString b = entry.getValue().getFirstPart(0);
+						Q q = null;
+						try {
+							q = ProtobufUtil.getParsedGenericInstance(
+									ci.getClass(), 3, b);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						candidate = ci.getCellValueFromProto(q);
+						if (null != q) {
+							if (min.containsKey(entry.getKey())) {
+								R current = min.get(entry.getKey());
+								min.put(entry.getKey(),
+										(current == null || (candidate != null && ci
+												.compare(current, candidate) < 0)) ? current
+												: candidate);
+							} else {
+								min.put(entry.getKey(),
+										ci.getCellValueFromProto(q));
+							}
+						}
+					}
+				}
+			}
+		}
+
+		MaxCallBack aMaxCallBack = new MaxCallBack();
+		table.coprocessorService(
+				TimeseriesAggregateService.class,
+				scan.getStartRow(),
+				scan.getStopRow(),
+				new Batch.Call<TimeseriesAggregateService, TimeseriesAggregateResponse>() {
+					@Override
+					public TimeseriesAggregateResponse call(
+							TimeseriesAggregateService instance)
+							throws IOException {
+						ServerRpcController controller = new ServerRpcController();
+						BlockingRpcCallback<TimeseriesAggregateResponse> rpcCallback = new BlockingRpcCallback<TimeseriesAggregateResponse>();
+						instance.getMax(controller, requestArg, rpcCallback);
+						TimeseriesAggregateResponse response = rpcCallback
+								.get();
+						if (controller.failedOnException()) {
+							throw controller.getFailedOn();
+						}
+						if (response.getEntryCount() > 0) {
+							return response;
+						}
+						return null;
+					}
+				}, aMaxCallBack);
+		return aMaxCallBack.getMax();
+	}
+
+	/**
+	 * It gives the sum value of a column for a given column family for the
+	 * given range. In case qualifier is null, a sum of all values for the given
+	 * family is returned.
+	 * 
+	 * @param tableName
+	 * @param ci
+	 * @param scan
+	 * @return sum val ConcurrentSkipListMap<Long, R> (Will come as proto from
+	 *         region needs to be passed out as ConcurrentSkipListMap)
+	 * @throws Throwable
+	 *             The caller is supposed to handle the exception as they are
+	 *             thrown & propagated to it.
+	 */
+	public <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, S> sum(
+			final TableName tableName,
+			final ColumnInterpreter<R, S, P, Q, T> ci, final Scan scan)
+			throws Throwable {
+		Table table = null;
+		try {
+			table = new HTable(conf, tableName);
+			return sum(table, ci, scan);
+		} finally {
+			if (table != null) {
+				table.close();
+			}
+		}
+	}
+
+	/**
+	 * It gives the sum value of a column for a given column family for the
+	 * given range. In case qualifier is null, a sum of all values for the given
+	 * family is returned.
+	 * 
+	 * @param table
+	 * @param ci
+	 * @param scan
+	 * @return sum val ConcurrentSkipListMap<Long, R> (Will come as proto from
+	 *         region needs to be passed out as ConcurrentSkipListMap)
+	 * @throws Throwable
+	 *             The caller is supposed to handle the exception as they are
+	 *             thrown & propagated to it.
+	 */
+	public <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, S> sum(
+			final Table table, final ColumnInterpreter<R, S, P, Q, T> ci,
+			final Scan scan) throws Throwable {
+		final TimeseriesAggregateRequest requestArg = validateArgAndGetPB(scan,
+				ci, false);
+		class MaxCallBack implements
+				Batch.Callback<TimeseriesAggregateResponse> {
+			ConcurrentSkipListMap<Long, S> sum = new ConcurrentSkipListMap<>();
+
+			ConcurrentSkipListMap<Long, S> getMax() {
+				return sum;
+			}
+
+			@Override
+			public synchronized void update(byte[] region, byte[] row,
+					TimeseriesAggregateResponse result) {
+				List<TimeseriesAggregateResponseMapEntry> results = ((TimeseriesAggregateResponse) result)
+						.getEntryList();
+				for (TimeseriesAggregateResponseMapEntry entry : results) {
+					S candidate;
+					if (entry.getValue().getFirstPartCount() > 0) {
+						ByteString b = entry.getValue().getFirstPart(0);
+						T t = null;
+						try {
+							t = ProtobufUtil.getParsedGenericInstance(
+									ci.getClass(), 4, b);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						candidate = ci.getPromotedValueFromProto(t);
+						if (null != t) {
+							if (sum.containsKey(entry.getKey())) {
+								S current = sum.get(entry.getKey());
+								sum.put(entry.getKey(),
+										(ci.add(current, candidate)));
+							} else {
+								if (entry.getValue().getFirstPartCount() == 0) {
+									sum.put(entry.getKey(), null);
+								} else {
+									sum.put(entry.getKey(), candidate);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		MaxCallBack aMaxCallBack = new MaxCallBack();
+		table.coprocessorService(
+				TimeseriesAggregateService.class,
+				scan.getStartRow(),
+				scan.getStopRow(),
+				new Batch.Call<TimeseriesAggregateService, TimeseriesAggregateResponse>() {
+					@Override
+					public TimeseriesAggregateResponse call(
+							TimeseriesAggregateService instance)
+							throws IOException {
+						ServerRpcController controller = new ServerRpcController();
+						BlockingRpcCallback<TimeseriesAggregateResponse> rpcCallback = new BlockingRpcCallback<TimeseriesAggregateResponse>();
+						instance.getMax(controller, requestArg, rpcCallback);
+						TimeseriesAggregateResponse response = rpcCallback
+								.get();
+						if (controller.failedOnException()) {
+							throw controller.getFailedOn();
+						}
+						if (response.getEntryCount() > 0) {
+							return response;
+						}
+						return null;
+					}
+				}, aMaxCallBack);
+		return aMaxCallBack.getMax();
+	}
+
+	/**
+	 * It computes average while fetching sum and row count from all the
+	 * corresponding regions. Approach is to compute a global sum of region
+	 * level sum and rowcount and then compute the average.
+	 * 
+	 * @param tableName
+	 * @param scan
+	 * @throws Throwable
+	 */
+	private <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, Pair<S, Long>> getAvgArgs(
+			final TableName tableName,
+			final ColumnInterpreter<R, S, P, Q, T> ci, final Scan scan)
+			throws Throwable {
+		Table table = null;
+		try {
+			table = new HTable(conf, tableName);
+			return getAvgArgs(table, ci, scan);
+		} finally {
+			if (table != null) {
+				table.close();
+			}
+		}
+	}
+
+	/**
+	 * It computes average while fetching sum and row count from all the
+	 * corresponding regions. Approach is to compute a global sum of region
+	 * level sum and rowcount and then compute the average.
+	 * 
+	 * @param table
+	 * @param scan
+	 * @throws Throwable
+	 */
+	private <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, Pair<S, Long>> getAvgArgs(
+			final Table table, final ColumnInterpreter<R, S, P, Q, T> ci,
+			final Scan scan) throws Throwable {
+		final TimeseriesAggregateRequest requestArg = validateArgAndGetPB(scan,
+				ci, false);
+		class AvgCallBack implements
+				Batch.Callback<TimeseriesAggregateResponse> {
+			ConcurrentSkipListMap<Long, Pair<S, Long>> averages = new ConcurrentSkipListMap<>();
+
+			public synchronized ConcurrentSkipListMap<Long, Pair<S, Long>> getAvgArgs() {
+				return averages;
+			}
+
+			@Override
+			public synchronized void update(byte[] region, byte[] row,
+					TimeseriesAggregateResponse result) {
+				List<TimeseriesAggregateResponseMapEntry> results = result
+						.getEntryList();
+				for (TimeseriesAggregateResponseMapEntry entry : results) {
+					ByteString b = entry.getValue().getFirstPart(0);
+					T t = null;
+					try {
+						t = ProtobufUtil.getParsedGenericInstance(
+								ci.getClass(), 4, b);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					S s = ci.getPromotedValueFromProto(t);
+
+					ByteBuffer bb = ByteBuffer.allocate(8).put(
+							getBytesFromResponse(entry.getValue()
+									.getSecondPart()));
+					bb.rewind();
+					if (averages.containsKey(entry.getKey())) {
+						S sum = averages.get(entry.getKey()).getFirst();
+						Long rowCount = averages.get(entry.getKey())
+								.getSecond();
+						averages.put(
+								entry.getKey(),
+								new Pair<S, Long>(ci.add(sum, s), rowCount
+										+ bb.getLong()));
+					} else {
+						if (entry.getValue().getFirstPartCount() == 0) {
+							averages.put(entry.getKey(), new Pair<S, Long>(
+									null, 0L));
+						} else {
+							averages.put(entry.getKey(), new Pair<S, Long>(s,
+									bb.getLong()));
+						}
+					}
+				}
+			}
+		}
+		AvgCallBack avgCallBack = new AvgCallBack();
+		table.coprocessorService(
+				TimeseriesAggregateService.class,
+				scan.getStartRow(),
+				scan.getStopRow(),
+				new Batch.Call<TimeseriesAggregateService, TimeseriesAggregateResponse>() {
+					@Override
+					public TimeseriesAggregateResponse call(
+							TimeseriesAggregateService instance)
+							throws IOException {
+						ServerRpcController controller = new ServerRpcController();
+						BlockingRpcCallback<TimeseriesAggregateResponse> rpcCallback = new BlockingRpcCallback<TimeseriesAggregateResponse>();
+						instance.getAvg(controller, requestArg, rpcCallback);
+						TimeseriesAggregateResponse response = rpcCallback
+								.get();
+						if (controller.failedOnException()) {
+							throw controller.getFailedOn();
+						}
+						if (response.getEntryCount() > 0) {
+							return response;
+						}
+						return null;
+					}
+				}, avgCallBack);
+		return avgCallBack.getAvgArgs();
+	}
+
+	/**
+	 * This is the client side interface/handle for calling the average method
+	 * for a given cf-cq combination. It was necessary to add one more call
+	 * stack as its return type should be a decimal value, irrespective of what
+	 * columninterpreter says. So, this methods collects the necessary
+	 * parameters to compute the average and returs the double value.
+	 * 
+	 * @param tableName
+	 * @param ci
+	 * @param scan
+	 * @return <R, S>
+	 * @throws Throwable
+	 */
+	public <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, Double> avg(
+			final TableName tableName,
+			final ColumnInterpreter<R, S, P, Q, T> ci, Scan scan)
+			throws Throwable {
+		ConcurrentSkipListMap<Long, Pair<S, Long>> p = getAvgArgs(tableName,
+				ci, scan);
+		ConcurrentSkipListMap<Long, Double> avg = new ConcurrentSkipListMap<Long, Double>();
+		for (Map.Entry<Long, Pair<S, Long>> entry : p.entrySet()) {
+			avg.put(entry.getKey(), ci.divideForAvg(
+					entry.getValue().getFirst(), entry.getValue().getSecond()));
+		}
+		return avg;
+	}
+
+	/**
+	 * This is the client side interface/handle for calling the average method
+	 * for a given cf-cq combination. It was necessary to add one more call
+	 * stack as its return type should be a decimal value, irrespective of what
+	 * columninterpreter says. So, this methods collects the necessary
+	 * parameters to compute the average and returs the double value.
+	 * 
+	 * @param table
+	 * @param ci
+	 * @param scan
+	 * @return <R, S>
+	 * @throws Throwable
+	 */
+	public <R, S, P extends Message, Q extends Message, T extends Message> ConcurrentSkipListMap<Long, Double> avg(
+			final Table table, final ColumnInterpreter<R, S, P, Q, T> ci,
+			Scan scan) throws Throwable {
+		ConcurrentSkipListMap<Long, Pair<S, Long>> p = getAvgArgs(table, ci,
+				scan);
+		ConcurrentSkipListMap<Long, Double> avg = new ConcurrentSkipListMap<Long, Double>();
+		for (Map.Entry<Long, Pair<S, Long>> entry : p.entrySet()) {
+			avg.put(entry.getKey(), ci.divideForAvg(
+					entry.getValue().getFirst(), entry.getValue().getSecond()));
+		}
+		return avg;
+	}
+
+	byte[] getBytesFromResponse(ByteString response) {
+		ByteBuffer bb = response.asReadOnlyByteBuffer();
+		bb.rewind();
+		byte[] bytes;
+		if (bb.hasArray()) {
+			bytes = bb.array();
+		} else {
+			bytes = response.toByteArray();
+		}
+		return bytes;
+	}
 }
