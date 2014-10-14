@@ -97,30 +97,6 @@ public final class TimeseriesAggregateProtos {
      * <code>optional .TimeseriesRange range = 5;</code>
      */
     org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRangeOrBuilder getRangeOrBuilder();
-
-    // optional int32 qualifierOffset = 6;
-    /**
-     * <code>optional int32 qualifierOffset = 6;</code>
-     *
-     * <pre>
-     **
-     * Specifies if there is a time offset (in form of the cq) specified for columns in rows. Only use this, when specifying a timestamp in the rowkey.
-     * (1) offset is in seconds to the last full timestamp
-     * (2) offset is in minutes to the last full timestamp
-     * </pre>
-     */
-    boolean hasQualifierOffset();
-    /**
-     * <code>optional int32 qualifierOffset = 6;</code>
-     *
-     * <pre>
-     **
-     * Specifies if there is a time offset (in form of the cq) specified for columns in rows. Only use this, when specifying a timestamp in the rowkey.
-     * (1) offset is in seconds to the last full timestamp
-     * (2) offset is in minutes to the last full timestamp
-     * </pre>
-     */
-    int getQualifierOffset();
   }
   /**
    * Protobuf type {@code TimeseriesAggregateRequest}
@@ -212,11 +188,6 @@ public final class TimeseriesAggregateProtos {
                 range_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000010;
-              break;
-            }
-            case 48: {
-              bitField0_ |= 0x00000020;
-              qualifierOffset_ = input.readInt32();
               break;
             }
           }
@@ -402,43 +373,12 @@ public final class TimeseriesAggregateProtos {
       return range_;
     }
 
-    // optional int32 qualifierOffset = 6;
-    public static final int QUALIFIEROFFSET_FIELD_NUMBER = 6;
-    private int qualifierOffset_;
-    /**
-     * <code>optional int32 qualifierOffset = 6;</code>
-     *
-     * <pre>
-     **
-     * Specifies if there is a time offset (in form of the cq) specified for columns in rows. Only use this, when specifying a timestamp in the rowkey.
-     * (1) offset is in seconds to the last full timestamp
-     * (2) offset is in minutes to the last full timestamp
-     * </pre>
-     */
-    public boolean hasQualifierOffset() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
-    }
-    /**
-     * <code>optional int32 qualifierOffset = 6;</code>
-     *
-     * <pre>
-     **
-     * Specifies if there is a time offset (in form of the cq) specified for columns in rows. Only use this, when specifying a timestamp in the rowkey.
-     * (1) offset is in seconds to the last full timestamp
-     * (2) offset is in minutes to the last full timestamp
-     * </pre>
-     */
-    public int getQualifierOffset() {
-      return qualifierOffset_;
-    }
-
     private void initFields() {
       interpreterClassName_ = "";
       scan_ = org.apache.hadoop.hbase.protobuf.generated.ClientProtos.Scan.getDefaultInstance();
       interpreterSpecificBytes_ = com.google.protobuf.ByteString.EMPTY;
       timeIntervalSeconds_ = 0;
       range_ = org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesRange.getDefaultInstance();
-      qualifierOffset_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -489,9 +429,6 @@ public final class TimeseriesAggregateProtos {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeMessage(5, range_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeInt32(6, qualifierOffset_);
-      }
       getUnknownFields().writeTo(output);
     }
 
@@ -520,10 +457,6 @@ public final class TimeseriesAggregateProtos {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, range_);
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(6, qualifierOffset_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -573,11 +506,6 @@ public final class TimeseriesAggregateProtos {
         result = result && getRange()
             .equals(other.getRange());
       }
-      result = result && (hasQualifierOffset() == other.hasQualifierOffset());
-      if (hasQualifierOffset()) {
-        result = result && (getQualifierOffset()
-            == other.getQualifierOffset());
-      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -610,10 +538,6 @@ public final class TimeseriesAggregateProtos {
       if (hasRange()) {
         hash = (37 * hash) + RANGE_FIELD_NUMBER;
         hash = (53 * hash) + getRange().hashCode();
-      }
-      if (hasQualifierOffset()) {
-        hash = (37 * hash) + QUALIFIEROFFSET_FIELD_NUMBER;
-        hash = (53 * hash) + getQualifierOffset();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -744,8 +668,6 @@ public final class TimeseriesAggregateProtos {
           rangeBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
-        qualifierOffset_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -802,10 +724,6 @@ public final class TimeseriesAggregateProtos {
         } else {
           result.range_ = rangeBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
-          to_bitField0_ |= 0x00000020;
-        }
-        result.qualifierOffset_ = qualifierOffset_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -838,9 +756,6 @@ public final class TimeseriesAggregateProtos {
         }
         if (other.hasRange()) {
           mergeRange(other.getRange());
-        }
-        if (other.hasQualifierOffset()) {
-          setQualifierOffset(other.getQualifierOffset());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1314,67 +1229,6 @@ public final class TimeseriesAggregateProtos {
           range_ = null;
         }
         return rangeBuilder_;
-      }
-
-      // optional int32 qualifierOffset = 6;
-      private int qualifierOffset_ ;
-      /**
-       * <code>optional int32 qualifierOffset = 6;</code>
-       *
-       * <pre>
-       **
-       * Specifies if there is a time offset (in form of the cq) specified for columns in rows. Only use this, when specifying a timestamp in the rowkey.
-       * (1) offset is in seconds to the last full timestamp
-       * (2) offset is in minutes to the last full timestamp
-       * </pre>
-       */
-      public boolean hasQualifierOffset() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
-      }
-      /**
-       * <code>optional int32 qualifierOffset = 6;</code>
-       *
-       * <pre>
-       **
-       * Specifies if there is a time offset (in form of the cq) specified for columns in rows. Only use this, when specifying a timestamp in the rowkey.
-       * (1) offset is in seconds to the last full timestamp
-       * (2) offset is in minutes to the last full timestamp
-       * </pre>
-       */
-      public int getQualifierOffset() {
-        return qualifierOffset_;
-      }
-      /**
-       * <code>optional int32 qualifierOffset = 6;</code>
-       *
-       * <pre>
-       **
-       * Specifies if there is a time offset (in form of the cq) specified for columns in rows. Only use this, when specifying a timestamp in the rowkey.
-       * (1) offset is in seconds to the last full timestamp
-       * (2) offset is in minutes to the last full timestamp
-       * </pre>
-       */
-      public Builder setQualifierOffset(int value) {
-        bitField0_ |= 0x00000020;
-        qualifierOffset_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 qualifierOffset = 6;</code>
-       *
-       * <pre>
-       **
-       * Specifies if there is a time offset (in form of the cq) specified for columns in rows. Only use this, when specifying a timestamp in the rowkey.
-       * (1) offset is in seconds to the last full timestamp
-       * (2) offset is in minutes to the last full timestamp
-       * </pre>
-       */
-      public Builder clearQualifierOffset() {
-        bitField0_ = (bitField0_ & ~0x00000020);
-        qualifierOffset_ = 0;
-        onChanged();
-        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:TimeseriesAggregateRequest)
@@ -4881,36 +4735,35 @@ public final class TimeseriesAggregateProtos {
   static {
     java.lang.String[] descriptorData = {
       "\n\031TimeseriesAggregate.proto\032\014Client.prot" +
-      "o\"\316\001\n\032TimeseriesAggregateRequest\022\036\n\026inte" +
+      "o\"\265\001\n\032TimeseriesAggregateRequest\022\036\n\026inte" +
       "rpreter_class_name\030\001 \002(\t\022\023\n\004scan\030\002 \002(\0132\005" +
       ".Scan\022\"\n\032interpreter_specific_bytes\030\003 \001(" +
       "\014\022\035\n\025time_interval_seconds\030\004 \002(\005\022\037\n\005rang" +
-      "e\030\005 \001(\0132\020.TimeseriesRange\022\027\n\017qualifierOf" +
-      "fset\030\006 \001(\005\"m\n\017TimeseriesRange\022\031\n\021key_tim" +
-      "estamp_min\030\001 \002(\005\022\031\n\021key_timestamp_max\030\002 " +
-      "\002(\005\022$\n\034key_timestamp_filter_pattern\030\003 \002(" +
-      "\t\"K\n TimeseriesAggregateResponseEntry\022\022\n",
-      "\nfirst_part\030\001 \003(\014\022\023\n\013second_part\030\002 \001(\014\"d" +
-      "\n#TimeseriesAggregateResponseMapEntry\022\013\n" +
-      "\003key\030\001 \002(\003\0220\n\005value\030\002 \002(\0132!.TimeseriesAg" +
-      "gregateResponseEntry\"R\n\033TimeseriesAggreg" +
-      "ateResponse\0223\n\005entry\030\001 \003(\0132$.TimeseriesA" +
-      "ggregateResponseMapEntry2\205\004\n\032TimeseriesA" +
-      "ggregateService\022C\n\006GetMax\022\033.TimeseriesAg" +
-      "gregateRequest\032\034.TimeseriesAggregateResp" +
-      "onse\022C\n\006GetMin\022\033.TimeseriesAggregateRequ" +
-      "est\032\034.TimeseriesAggregateResponse\022C\n\006Get",
-      "Sum\022\033.TimeseriesAggregateRequest\032\034.Times" +
-      "eriesAggregateResponse\022F\n\tGetRowNum\022\033.Ti" +
-      "meseriesAggregateRequest\032\034.TimeseriesAgg" +
-      "regateResponse\022C\n\006GetAvg\022\033.TimeseriesAgg" +
-      "regateRequest\032\034.TimeseriesAggregateRespo" +
-      "nse\022C\n\006GetStd\022\033.TimeseriesAggregateReque" +
-      "st\032\034.TimeseriesAggregateResponse\022F\n\tGetM" +
-      "edian\022\033.TimeseriesAggregateRequest\032\034.Tim" +
-      "eseriesAggregateResponseBO\n*org.apache.h" +
-      "adoop.hbase.protobuf.generatedB\031Timeseri",
-      "esAggregateProtosH\001\210\001\001\240\001\001"
+      "e\030\005 \001(\0132\020.TimeseriesRange\"m\n\017TimeseriesR" +
+      "ange\022\031\n\021key_timestamp_min\030\001 \002(\005\022\031\n\021key_t" +
+      "imestamp_max\030\002 \002(\005\022$\n\034key_timestamp_filt" +
+      "er_pattern\030\003 \002(\t\"K\n TimeseriesAggregateR" +
+      "esponseEntry\022\022\n\nfirst_part\030\001 \003(\014\022\023\n\013seco",
+      "nd_part\030\002 \001(\014\"d\n#TimeseriesAggregateResp" +
+      "onseMapEntry\022\013\n\003key\030\001 \002(\003\0220\n\005value\030\002 \002(\013" +
+      "2!.TimeseriesAggregateResponseEntry\"R\n\033T" +
+      "imeseriesAggregateResponse\0223\n\005entry\030\001 \003(" +
+      "\0132$.TimeseriesAggregateResponseMapEntry2" +
+      "\205\004\n\032TimeseriesAggregateService\022C\n\006GetMax" +
+      "\022\033.TimeseriesAggregateRequest\032\034.Timeseri" +
+      "esAggregateResponse\022C\n\006GetMin\022\033.Timeseri" +
+      "esAggregateRequest\032\034.TimeseriesAggregate" +
+      "Response\022C\n\006GetSum\022\033.TimeseriesAggregate",
+      "Request\032\034.TimeseriesAggregateResponse\022F\n" +
+      "\tGetRowNum\022\033.TimeseriesAggregateRequest\032" +
+      "\034.TimeseriesAggregateResponse\022C\n\006GetAvg\022" +
+      "\033.TimeseriesAggregateRequest\032\034.Timeserie" +
+      "sAggregateResponse\022C\n\006GetStd\022\033.Timeserie" +
+      "sAggregateRequest\032\034.TimeseriesAggregateR" +
+      "esponse\022F\n\tGetMedian\022\033.TimeseriesAggrega" +
+      "teRequest\032\034.TimeseriesAggregateResponseB" +
+      "O\n*org.apache.hadoop.hbase.protobuf.gene" +
+      "ratedB\031TimeseriesAggregateProtosH\001\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -4922,7 +4775,7 @@ public final class TimeseriesAggregateProtos {
           internal_static_TimeseriesAggregateRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_TimeseriesAggregateRequest_descriptor,
-              new java.lang.String[] { "InterpreterClassName", "Scan", "InterpreterSpecificBytes", "TimeIntervalSeconds", "Range", "QualifierOffset", });
+              new java.lang.String[] { "InterpreterClassName", "Scan", "InterpreterSpecificBytes", "TimeIntervalSeconds", "Range", });
           internal_static_TimeseriesRange_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_TimeseriesRange_fieldAccessorTable = new

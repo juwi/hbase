@@ -67,7 +67,6 @@ public class TimeseriesAggregationClient {
   private int intervalSeconds;
   private Integer timestampSecondsMin, timestampSecondsMax;
   private String keyFilterPattern;
-  private Integer cqOffset;
 
   /**
    * Constructor with Conf object
@@ -83,13 +82,12 @@ public class TimeseriesAggregationClient {
    * @param cfg
    */
   public TimeseriesAggregationClient(Configuration cfg, int intervalSeconds,
-      int timestampSecondsMin, int timestampSecondsMax, String keyFilterPattern, int cqOffset) {
+      int timestampSecondsMin, int timestampSecondsMax, String keyFilterPattern) {
     this.conf = cfg;
     this.intervalSeconds = intervalSeconds;
     this.timestampSecondsMin = timestampSecondsMin;
     this.timestampSecondsMax = timestampSecondsMax;
     this.keyFilterPattern = keyFilterPattern;
-    this.cqOffset = cqOffset;
   }
 
   /**
@@ -133,7 +131,7 @@ public class TimeseriesAggregationClient {
           final ColumnInterpreter<R, S, P, Q, T> ci, final Scan scan) throws Throwable {
     final TimeseriesAggregateRequest requestArg =
         validateArgAndGetPB(scan, ci, false, intervalSeconds, timestampSecondsMin,
-          timestampSecondsMax, keyFilterPattern, cqOffset);
+          timestampSecondsMax, keyFilterPattern);
     class MaxCallBack implements Batch.Callback<TimeseriesAggregateResponse> {
       ConcurrentSkipListMap<Long, R> max = new ConcurrentSkipListMap<>();
 
@@ -236,7 +234,7 @@ public class TimeseriesAggregationClient {
           final ColumnInterpreter<R, S, P, Q, T> ci, final Scan scan) throws Throwable {
     final TimeseriesAggregateRequest requestArg =
         validateArgAndGetPB(scan, ci, false, intervalSeconds, timestampSecondsMin,
-          timestampSecondsMax, keyFilterPattern, cqOffset);
+          timestampSecondsMax, keyFilterPattern);
     class MaxCallBack implements Batch.Callback<TimeseriesAggregateResponse> {
       ConcurrentSkipListMap<Long, R> min = new ConcurrentSkipListMap<>();
 
@@ -339,7 +337,7 @@ public class TimeseriesAggregationClient {
           final ColumnInterpreter<R, S, P, Q, T> ci, final Scan scan) throws Throwable {
     final TimeseriesAggregateRequest requestArg =
         validateArgAndGetPB(scan, ci, false, intervalSeconds, timestampSecondsMin,
-          timestampSecondsMax, keyFilterPattern, cqOffset);
+          timestampSecondsMax, keyFilterPattern);
     class MaxCallBack implements Batch.Callback<TimeseriesAggregateResponse> {
       ConcurrentSkipListMap<Long, S> sum = new ConcurrentSkipListMap<>();
 
@@ -421,7 +419,7 @@ public class TimeseriesAggregationClient {
           final ColumnInterpreter<R, S, P, Q, T> ci, final Scan scan) throws Throwable {
     final TimeseriesAggregateRequest requestArg =
         validateArgAndGetPB(scan, ci, false, intervalSeconds, timestampSecondsMin,
-          timestampSecondsMax, keyFilterPattern, cqOffset);
+          timestampSecondsMax, keyFilterPattern);
     class AvgCallBack implements Batch.Callback<TimeseriesAggregateResponse> {
       ConcurrentSkipListMap<Long, Pair<S, Long>> averages = new ConcurrentSkipListMap<>();
 
@@ -552,7 +550,7 @@ public class TimeseriesAggregationClient {
           final ColumnInterpreter<R, S, P, Q, T> ci, final Scan scan) throws Throwable {
     final TimeseriesAggregateRequest requestArg =
         validateArgAndGetPB(scan, ci, false, intervalSeconds, timestampSecondsMin,
-          timestampSecondsMax, keyFilterPattern, cqOffset);
+          timestampSecondsMax, keyFilterPattern);
     class StdCallback implements Batch.Callback<TimeseriesAggregateResponse> {
       ConcurrentSkipListMap<Long, Pair<List<S>, Long>> stds = new ConcurrentSkipListMap<>();
 
@@ -698,7 +696,7 @@ public class TimeseriesAggregationClient {
           throws Throwable {
     final TimeseriesAggregateRequest requestArg =
         validateArgAndGetPB(scan, ci, false, intervalSeconds, timestampSecondsMin,
-          timestampSecondsMax, keyFilterPattern, cqOffset);
+          timestampSecondsMax, keyFilterPattern);
     class StdCallback implements Batch.Callback<TimeseriesAggregateResponse> {
       ConcurrentSkipListMap<Long, Pair<NavigableMap<byte[], List<S>>, List<S>>> medians =
           new ConcurrentSkipListMap<>();
@@ -928,7 +926,7 @@ public class TimeseriesAggregationClient {
   <R, S, P extends Message, Q extends Message, T extends Message> TimeseriesAggregateRequest
       validateArgAndGetPB(Scan scan, ColumnInterpreter<R, S, P, Q, T> ci,
           boolean canFamilyBeAbsent, int intervalSeconds, Integer timestampSecondsMin,
-          Integer timestampSecondsMax, String keyFilterPattern, Integer cqOffset) throws IOException {
+          Integer timestampSecondsMax, String keyFilterPattern) throws IOException {
     validateParameters(scan, canFamilyBeAbsent);
     final TimeseriesAggregateRequest.Builder requestBuilder =
         TimeseriesAggregateRequest.newBuilder();
@@ -946,7 +944,6 @@ public class TimeseriesAggregationClient {
       rangeBuilder.setKeyTimestampMax(timestampSecondsMax);
       rangeBuilder.setKeyTimestampFilterPattern(keyFilterPattern);
       requestBuilder.setRange(rangeBuilder.build());
-      requestBuilder.setQualifierOffset(cqOffset);
     }
     return requestBuilder.build();
   }
