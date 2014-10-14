@@ -86,7 +86,12 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
     }
     return null;
   }
-
+  
+  private long getTimestampFromOffset(long currentTimeStamp, int offset) {
+    int offsetMicro = offset * 1000;
+    return currentTimeStamp + offsetMicro;
+  }
+  
   private long getTimestampFromRowKey(Cell kv, TimeseriesAggregateRequest request) {
     String keyPattern = request.getRange().getKeyTimestampFilterPattern();
     String rowKey = Bytes.toString(CellUtil.cloneRow(kv));
