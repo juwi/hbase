@@ -36,6 +36,12 @@ message TimeseriesAggregateRequest {
   optional bytes  interpreter_specific_bytes = 3;
   required int32 time_interval_seconds = 4;
   optional TimeseriesRange range = 5;
+  /**
+   * Specifies if there is a time offset (in form of the cq) specified for columns in rows. Only use this, when specifying a timestamp in the rowkey.
+   * (1) offset is in seconds to the last full timestamp
+   * (2) offset is in minutes to the last full timestamp
+  **/
+  optional int32 qualifierOffset = 6;
 }
 
 message TimeseriesRange {
