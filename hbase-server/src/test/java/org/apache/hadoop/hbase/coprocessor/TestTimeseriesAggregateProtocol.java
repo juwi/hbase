@@ -3,9 +3,7 @@ package org.apache.hadoop.hbase.coprocessor;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +19,6 @@ import org.apache.hadoop.hbase.client.Durability;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
 import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.client.coprocessor.TimeseriesAggregationClient;
 import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.EmptyMsg;
@@ -37,7 +34,7 @@ import org.junit.experimental.categories.Category;
 
 @Category({ CoprocessorTests.class, MediumTests.class })
 public class TestTimeseriesAggregateProtocol {
-  protected static Log myLog = LogFactory.getLog(TestTimeseriesAggregateProtocol.class);
+  protected static Log log = LogFactory.getLog(TestTimeseriesAggregateProtocol.class);
 
   /**
    * Creating the test infrastructure.
@@ -138,7 +135,7 @@ public class TestTimeseriesAggregateProtocol {
     ConcurrentSkipListMap<Long, Long> median = aClient.median(TEST_TABLE, ci,
         scan);
     for(Map.Entry<Long, Long> entry : median.entrySet()) {
-      System.out.println(entry.getKey() + ", " + entry.getValue());
+      log.fatal(entry.getKey() + ", " + entry.getValue());
     }
     assertEquals(49L, median);
   }
@@ -160,8 +157,8 @@ public class TestTimeseriesAggregateProtocol {
     final ColumnInterpreter<Long, Long, EmptyMsg, LongMsg, LongMsg> ci =
         new LongColumnInterpreter();
     ConcurrentSkipListMap<Long, Long> maximum = aClient.max(TEST_TABLE, ci, scan);
-    for(Map.Entry<Long, Long> entry : median.entrySet()) {
-      System.out.println(entry.getKey() + ", " + entry.getValue());
+    for(Map.Entry<Long, Long> entry : maximum.entrySet()) {
+      log.fatal(entry.getKey() + ", " + entry.getValue());
     }
     assertEquals(99, maximum);
   }
