@@ -47,8 +47,7 @@ import com.google.protobuf.Service;
  * @param <S> Promoted data type
  * @param <P> PB message that is used to transport initializer specific bytes
  * @param <Q> PB message that is used to transport Cell (<T>) instance
- * @param <R> PB message that is used to transport Promoted (<S>) instance String rowKey =
- *          Bytes.toString(CellUtil.cloneRow(kv));
+ * @param <R> PB message that is used to transport Promoted (<S>) instance 
  */
 @InterfaceAudience.Private
 public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extends Message, R extends Message>
@@ -92,14 +91,19 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
     return currentTimeStamp + offsetMicro;
   }
   
-  private long getTimestampFromRowKey(Cell kv, TimeseriesAggregateRequest request) {
+  private int getTimestampFromRowKey(Cell kv, TimeseriesAggregateRequest request) {
     String keyPattern = request.getRange().getKeyTimestampFilterPattern();
-    String rowKey = Bytes.toString(CellUtil.cloneRow(kv));
-    if (keyPattern.length() != rowKey.length()) {
+    byte[] rowKey = CellUtil.cloneRow(kv);
+    if (keyPattern.length() != rowKey.length) {
       log.error("Timestamp Filter Pattern and Row Key length do not match. Don't know how to handle this.");
-      return 0L;
+      return 0;
     }
-    return Long.valueOf(rowKey.substring(keyPattern.indexOf("1"), keyPattern.lastIndexOf("1")));
+    byte[] ts = new byte[4];
+    int j = 0;
+    for(int i = keyPattern.indexOf("1"); i <= keyPattern.lastIndexOf("1"); i++, j++) {
+      ts[j] = rowKey[i];
+    }
+    return Bytes.toInt(ts);
   }
 
   private long getMaxTimeStamp(Scan scan, TimeseriesAggregateRequest request) {
