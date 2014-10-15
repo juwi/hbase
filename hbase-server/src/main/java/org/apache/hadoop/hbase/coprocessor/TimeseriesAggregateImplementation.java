@@ -148,7 +148,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
           for (Cell kv : results) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromRowKey(kv, request) * 1000;
+            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(timestamp)) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
@@ -265,7 +265,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
           for (Cell kv : results) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromRowKey(kv, request) * 1000;
+            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(timestamp)) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
@@ -356,7 +356,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
           for (Cell kv : results) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromRowKey(kv, request) * 1000;
+            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(timestamp)) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
@@ -454,7 +454,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
           for (Cell kv : results) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromRowKey(kv, request) * 1000;
+            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(timestamp)) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
@@ -549,7 +549,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
           for (Cell kv : results) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromRowKey(kv, request) * 1000;
+            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(kv.getTimestamp())) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
@@ -652,7 +652,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
           for (Cell kv : results) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromRowKey(kv, request) * 1000;
+            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(timestamp)) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
