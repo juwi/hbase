@@ -184,10 +184,10 @@ public class TimeseriesAggregationClient {
           if (controller.failedOnException()) {
             throw controller.getFailedOn();
           }
-          if (response.getEntryCount() > 0) {
-            return response;
-          }
-          return null;
+          // if (response.getEntryCount() > 0) {
+          return response;
+          // }
+          // return null;
         }
       }, aMaxCallBack);
     return aMaxCallBack.getMax();
@@ -397,10 +397,10 @@ public class TimeseriesAggregationClient {
           if (controller.failedOnException()) {
             throw controller.getFailedOn();
           }
-          if (response.getEntryCount() > 0) {
-            return response;
-          }
-          return null;
+          // if (response.getEntryCount() > 0) {
+          return response;
+          // }
+          // return null;
         }
       }, aMaxCallBack);
     return aMaxCallBack.getMax();
@@ -479,10 +479,10 @@ public class TimeseriesAggregationClient {
           if (controller.failedOnException()) {
             throw controller.getFailedOn();
           }
-          if (response.getEntryCount() > 0) {
-            return response;
-          }
-          return null;
+          // if (response.getEntryCount() > 0) {
+          return response;
+          // }
+          // return null;
         }
       }, avgCallBack);
     return avgCallBack.getAvgArgs();
@@ -616,10 +616,10 @@ public class TimeseriesAggregationClient {
           if (controller.failedOnException()) {
             throw controller.getFailedOn();
           }
-          if (response.getEntryCount() > 0) {
-            return response;
-          }
-          return null;
+          // if (response.getEntryCount() > 0) {
+          return response;
+          // }
+          // return null;
         }
       }, stdCallback);
     return stdCallback.getStdParams();
@@ -697,7 +697,7 @@ public class TimeseriesAggregationClient {
     final TimeseriesAggregateRequest requestArg =
         validateArgAndGetPB(scan, ci, false, intervalSeconds, timestampSecondsMin,
           timestampSecondsMax, keyFilterPattern);
-    class StdCallback implements Batch.Callback<TimeseriesAggregateResponse> {
+    class MedianCallback implements Batch.Callback<TimeseriesAggregateResponse> {
       ConcurrentSkipListMap<Long, Pair<NavigableMap<byte[], List<S>>, List<S>>> medians =
           new ConcurrentSkipListMap<>();
 
@@ -760,7 +760,7 @@ public class TimeseriesAggregationClient {
         }
       }
     }
-    StdCallback stdCallback = new StdCallback();
+    MedianCallback medianCallback = new MedianCallback();
     table.coprocessorService(TimeseriesAggregateService.class, scan.getStartRow(),
       scan.getStopRow(), new Batch.Call<TimeseriesAggregateService, TimeseriesAggregateResponse>() {
         @Override
@@ -774,14 +774,14 @@ public class TimeseriesAggregationClient {
           if (controller.failedOnException()) {
             throw controller.getFailedOn();
           }
-          if (response.getEntryCount() > 0) {
-            return response;
-          }
-          return null;
+          // if (response.getEntryCount() > 0) {
+          return response;
+          // }
+          // return null;
         }
 
-      }, stdCallback);
-    return stdCallback.getMedianParams();
+      }, medianCallback);
+    return medianCallback.getMedianParams();
   }
 
   /**

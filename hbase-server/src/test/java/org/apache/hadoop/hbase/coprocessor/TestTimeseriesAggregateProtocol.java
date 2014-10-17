@@ -12,12 +12,15 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Durability;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.client.coprocessor.TimeseriesAggregationClient;
@@ -41,10 +44,13 @@ public class TestTimeseriesAggregateProtocol {
    */
   private static final TableName TEST_TABLE = TableName.valueOf("TestTable");
   private static final byte[] TEST_FAMILY = Bytes.toBytes("TestFamily");
-  private static final String KEY_FILTER_PATTERN = "000000011111111";
+  private static final String KEY_FILTER_PATTERN = "00000001111";
   private static String ROW = "testRow";
-  private static int TIME_BASELINE = (int) (new GregorianCalendar(2014, 10, 10, 0, 0, 0).getTime()
-      .getTime() / 1000);
+  private static int TIME_BASELINE = (int) ((new GregorianCalendar(2014, 10, 10, 0, 0, 0).getTime()
+      .getTime()) / 1000);
+  private static final byte[] START_ROW = Bytes.add(ROW.getBytes(), Bytes.toBytes(TIME_BASELINE));
+  private static final byte[] STOP_ROW = Bytes.add(ROW.getBytes(),
+    Bytes.toBytes(TIME_BASELINE + (3600 * 2)));
   private static final int ROWSIZE = 100;
   private static final int rowSeperator1 = 25;
   private static final int rowSeperator2 = 60;
@@ -106,40 +112,41 @@ public class TestTimeseriesAggregateProtocol {
 
     for (int i = 0; i < n; i++) {
       Map<byte[], byte[]> innerMap = new LinkedHashMap<byte[], byte[]>();
-      byte[] key = Bytes.add(base.getBytes(),Bytes.toBytes(time));
+      byte[] key = Bytes.add(base.getBytes(), Bytes.toBytes(time));
       int cq = 0;
       for (int j = 0; j < n; j++) {
         if (j != 0) cq += interval;
-        innerMap.put(Bytes.toBytes(cq), Bytes.toBytes(j));
+        long value = j;
+        innerMap.put(Bytes.toBytes(cq), Bytes.toBytes(value));
       }
       ret.add(new Pair<byte[], Map<byte[], byte[]>>(key, innerMap));
       time += 3600;
     }
     return ret;
   }
-  
+
   /**
    * ****************** Test cases for Median **********************
    */
   /**
    * @throws Throwable
    */
-  @Test (timeout=300000)
+  @Test(timeout = 300000)
   public void testMedianWithValidRange() throws Throwable {
-    int TIME_LIMIT = (int) (new GregorianCalendar(2014, 10, 10, 2, 0, 0).getTime()
-        .getTime() / 1000);
-    TimeseriesAggregationClient aClient = new TimeseriesAggregationClient(conf,900,TIME_BASELINE, TIME_LIMIT,KEY_FILTER_PATTERN);
+    int TIME_LIMIT =
+        (int) ((new GregorianCalendar(2014, 10, 10, 2, 0, 0).getTime().getTime()) / 1000);
+    TimeseriesAggregationClient aClient =
+        new TimeseriesAggregationClient(conf, 900, TIME_BASELINE, TIME_LIMIT, KEY_FILTER_PATTERN);
     Scan scan = new Scan();
-    final ColumnInterpreter<Long, Long, EmptyMsg, LongMsg, LongMsg> ci = 
+    scan.addFamily(TEST_FAMILY);
+    // scan.setStartRow(START_ROW);
+    // scan.setStopRow(STOP_ROW);
+    final ColumnInterpreter<Long, Long, EmptyMsg, LongMsg, LongMsg> ci =
         new LongColumnInterpreter();
-    ConcurrentSkipListMap<Long, Long> median = aClient.median(TEST_TABLE, ci,
-        scan);
-    for(Map.Entry<Long, Long> entry : median.entrySet()) {
-      log.fatal(entry.getKey() + ", " + entry.getValue());
-    }
+    ConcurrentSkipListMap<Long, Long> median = aClient.median(TEST_TABLE, ci, scan);
     assertEquals(49L, median);
   }
-  
+
   /**
    * ***************Test cases for Maximum *******************
    */
@@ -148,18 +155,20 @@ public class TestTimeseriesAggregateProtocol {
    * give max for the entire table.
    * @throws Throwable
    */
-  @Test (timeout=300000)
+  @Test(timeout = 300000)
   public void testMaxWithValidRange() throws Throwable {
-    int TIME_LIMIT = (int) (new GregorianCalendar(2014, 10, 10, 2, 0, 0).getTime()
-        .getTime() / 1000);
-    TimeseriesAggregationClient aClient = new TimeseriesAggregationClient(conf,900,TIME_BASELINE, TIME_LIMIT,KEY_FILTER_PATTERN);
+    HTable t = new HTable(conf, TEST_TABLE);
+    int TIME_LIMIT =
+        (int) ((new GregorianCalendar(2014, 10, 10, 2, 0, 0).getTime().getTime()) / 1000);
+    TimeseriesAggregationClient aClient =
+        new TimeseriesAggregationClient(conf, 900, TIME_BASELINE, TIME_LIMIT, KEY_FILTER_PATTERN);
     Scan scan = new Scan();
+    scan.addFamily(TEST_FAMILY);
+    // scan.setStartRow(START_ROW);
+    // scan.setStopRow(STOP_ROW);
     final ColumnInterpreter<Long, Long, EmptyMsg, LongMsg, LongMsg> ci =
         new LongColumnInterpreter();
     ConcurrentSkipListMap<Long, Long> maximum = aClient.max(TEST_TABLE, ci, scan);
-    for(Map.Entry<Long, Long> entry : maximum.entrySet()) {
-      log.fatal(entry.getKey() + ", " + entry.getValue());
-    }
     assertEquals(99, maximum);
   }
 

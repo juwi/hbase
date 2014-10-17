@@ -47,7 +47,7 @@ import com.google.protobuf.Service;
  * @param <S> Promoted data type
  * @param <P> PB message that is used to transport initializer specific bytes
  * @param <Q> PB message that is used to transport Cell (<T>) instance
- * @param <R> PB message that is used to transport Promoted (<S>) instance 
+ * @param <R> PB message that is used to transport Promoted (<S>) instance
  */
 @InterfaceAudience.Private
 public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extends Message, R extends Message>
@@ -72,12 +72,13 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
 
   private TimeRange getTimeRange(TimeseriesAggregateRequest request, Scan scan) {
     try {
+      long interval = request.getTimeIntervalSeconds();
       if (!request.hasRange()) {
-        return new TimeRange(scan.getTimeRange().getMin(), scan.getTimeRange().getMin()
-            + request.getTimeIntervalSeconds() * 1000);
+        return new TimeRange(scan.getTimeRange().getMin(), scan.getTimeRange().getMin() + interval
+            * 1000l);
       } else {
-        return new TimeRange(request.getRange().getKeyTimestampMin() * 1000, (request.getRange()
-            .getKeyTimestampMin() + request.getTimeIntervalSeconds()) * 1000);
+        long tsmin = request.getRange().getKeyTimestampMin();
+        return new TimeRange(tsmin * 1000l, (long) (tsmin + interval) * 1000l);
       }
     } catch (IOException e) {
       // TODO Auto-generated catch block
@@ -85,30 +86,32 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
     }
     return null;
   }
-  
+
   private long getTimestampFromOffset(long currentTimeStamp, int offset) {
-    int offsetMicro = offset * 1000;
+    long offsetMicro = (long) offset * 1000l;
     return currentTimeStamp + offsetMicro;
   }
-  
-  private int getTimestampFromRowKey(Cell kv, TimeseriesAggregateRequest request) {
+
+  private long getSecondsTimestampFromRowKey(Cell kv, TimeseriesAggregateRequest request) {
     String keyPattern = request.getRange().getKeyTimestampFilterPattern();
     byte[] rowKey = CellUtil.cloneRow(kv);
     if (keyPattern.length() != rowKey.length) {
+      log.error("Row Key:" + rowKey + ", Pattern: " + keyPattern);
       log.error("Timestamp Filter Pattern and Row Key length do not match. Don't know how to handle this.");
       return 0;
     }
     byte[] ts = new byte[4];
     int j = 0;
-    for(int i = keyPattern.indexOf("1"); i <= keyPattern.lastIndexOf("1"); i++, j++) {
+    for (int i = keyPattern.indexOf("1"); i <= keyPattern.lastIndexOf("1"); i++, j++) {
       ts[j] = rowKey[i];
     }
-    return Bytes.toInt(ts);
+    return (long) Bytes.toInt(ts);
   }
 
   private long getMaxTimeStamp(Scan scan, TimeseriesAggregateRequest request) {
     if (request.hasRange()) {
-      return request.getRange().getKeyTimestampMax() * 1000;
+      long timestamp = request.getRange().getKeyTimestampMax();
+      return timestamp * 1000l;
     }
     return scan.getTimeRange().getMax();
   }
@@ -121,7 +124,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
     TimeRange intervalRange = null;
     T max = null;
     boolean hasScannerRange = false;
-    Map<TimeRange, T> maximums = new HashMap<TimeRange, T>();
+    Map<Long, T> maximums = new HashMap<Long, T>();
 
     if (!request.hasRange()) {
       hasScannerRange = true; // When no timerange is being passed in via
@@ -147,33 +150,38 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       // qualifier can be null.
       boolean hasMoreRows = false;
       do {
-        if (intervalRange.getMin() < maxTimeStamp) {
-          hasMoreRows = scanner.next(results);
-          for (Cell kv : results) {
+
+        hasMoreRows = scanner.next(results);
+        for (Cell kv : results) {
+          if (intervalRange.getMin() < maxTimeStamp) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
+            else timestamp =
+                getTimestampFromOffset(getSecondsTimestampFromRowKey(kv, request) * 1000l,
+                  Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(timestamp)) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
-                      + request.getTimeIntervalSeconds());
+                      + ((long)request.getTimeIntervalSeconds()*1000l));
+              max = null;
             }
             if (intervalRange.withinTimeRange(timestamp)) {
-              temp = ci.getValue(colFamily, qualifier, kv);
+              temp = ci.getValue(colFamily, kv.getQualifier(), kv);
               max = (max == null || (temp != null && ci.compare(temp, max) > 0)) ? temp : max;
               if (ci.compare(maximums.get(intervalRange), max) < 0) {
-                maximums.put(new TimeRange(intervalRange.getMin(), intervalRange.getMax()), max);
+                maximums.put(intervalRange.getMin(), max);
               }
             }
-          }
-          results.clear();
-        } else break;
+          } else break;
+        }
+        results.clear();
+
       } while (hasMoreRows);
       if (!maximums.isEmpty()) {
         TimeseriesAggregateResponse.Builder responseBuilder =
             TimeseriesAggregateResponse.newBuilder();
 
-        for (Map.Entry<TimeRange, T> entry : maximums.entrySet()) {
+        for (Map.Entry<Long, T> entry : maximums.entrySet()) {
           TimeseriesAggregateResponseEntry responseElement = null;
           TimeseriesAggregateResponseMapEntry mapEntry = null;
           TimeseriesAggregateResponseEntry.Builder valueBuilder =
@@ -183,11 +191,12 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
 
           valueBuilder.addFirstPart(ci.getProtoForCellType(entry.getValue()).toByteString());
 
-          mapElementBuilder.setKey(entry.getKey().getMin());
+          mapElementBuilder.setKey(entry.getKey());
           mapElementBuilder.setValue(valueBuilder.build());
 
-          responseBuilder.addEntry(mapElementBuilder.build()).build();
+          responseBuilder.addEntry(mapElementBuilder.build());
         }
+        response = responseBuilder.build();
       }
     } catch (IOException e) {
       ResponseConverter.setControllerException(controller, e);
@@ -264,12 +273,14 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       }
       boolean hasMoreRows = false;
       do {
-        if (intervalRange.getMin() < maxTimeStamp) {
-          hasMoreRows = scanner.next(results);
-          for (Cell kv : results) {
+        hasMoreRows = scanner.next(results);
+        for (Cell kv : results) {
+          if (intervalRange.getMin() < maxTimeStamp) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
+            else timestamp =
+                getTimestampFromOffset(getSecondsTimestampFromRowKey(kv, request) * 1000l,
+                  Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(timestamp)) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
@@ -282,9 +293,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
                 minimums.put(new TimeRange(intervalRange.getMin(), intervalRange.getMax()), min);
               }
             }
-          }
-          results.clear();
-        } else break;
+          } else break;
+        }
+        results.clear();
       } while (hasMoreRows);
       if (minimums != null) {
         TimeseriesAggregateResponse.Builder responseBuilder =
@@ -303,8 +314,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
           mapElementBuilder.setKey(entry.getKey().getMin());
           mapElementBuilder.setValue(valueBuilder.build());
 
-          responseBuilder.addEntry(mapElementBuilder.build()).build();
+          responseBuilder.addEntry(mapElementBuilder.build());
         }
+        response = responseBuilder.build();
       }
     } catch (IOException e) {
       ResponseConverter.setControllerException(controller, e);
@@ -355,12 +367,14 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       List<Cell> results = new ArrayList<Cell>();
       boolean hasMoreRows = false;
       do {
-        if (intervalRange.getMin() < maxTimeStamp) {
-          hasMoreRows = scanner.next(results);
-          for (Cell kv : results) {
+        hasMoreRows = scanner.next(results);
+        for (Cell kv : results) {
+          if (intervalRange.getMin() < maxTimeStamp) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
+            else timestamp =
+                getTimestampFromOffset(getSecondsTimestampFromRowKey(kv, request) * 1000l,
+                  Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(timestamp)) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
@@ -372,9 +386,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
               if (temp != null) sumVal = ci.add(sumVal, ci.castToReturnType(temp));
               sums.put(new TimeRange(intervalRange.getMin(), intervalRange.getMax()), sumVal);
             }
-          }
-          results.clear();
-        } else break;
+          } else break;
+        }
+        results.clear();
       } while (hasMoreRows);
       if (!sums.isEmpty()) {
         TimeseriesAggregateResponse.Builder responseBuilder =
@@ -393,8 +407,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
 
           mapElementBuilder.setKey(entry.getKey().getMin());
           mapElementBuilder.setValue(valueBuilder.build());
-          responseBuilder.addEntry(mapElementBuilder.build()).build();
+          responseBuilder.addEntry(mapElementBuilder.build());
         }
+        response = responseBuilder.build();
       }
     } catch (IOException e) {
       ResponseConverter.setControllerException(controller, e);
@@ -452,13 +467,15 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       boolean hasMoreRows = false;
 
       do {
-        if (intervalRange.getMin() < maxTimeStamp) {
-          results.clear();
-          hasMoreRows = scanner.next(results);
-          for (Cell kv : results) {
+        results.clear();
+        hasMoreRows = scanner.next(results);
+        for (Cell kv : results) {
+          if (intervalRange.getMin() < maxTimeStamp) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
+            else timestamp =
+                getTimestampFromOffset(getSecondsTimestampFromRowKey(kv, request) * 1000l,
+                  Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(timestamp)) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
@@ -473,8 +490,8 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
               averages.put(new TimeRange(intervalRange.getMin(), intervalRange.getMax()),
                 new AbstractMap.SimpleEntry<Long, S>(kvCountVal, sumVal));
             }
-          }
-        } else break;
+          } else break;
+        }
       } while (hasMoreRows);
       if (!averages.isEmpty()) {
         TimeseriesAggregateResponse.Builder responseBuilder =
@@ -496,8 +513,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
 
           mapElementBuilder.setKey(entry.getKey().getMin());
           mapElementBuilder.setValue(valueBuilder.build());
-          responseBuilder.addEntry(mapElementBuilder.build()).build();
+          responseBuilder.addEntry(mapElementBuilder.build());
         }
+        response = responseBuilder.build();
       }
     } catch (IOException e) {
       ResponseConverter.setControllerException(controller, e);
@@ -547,13 +565,15 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       boolean hasMoreRows = false;
 
       do {
-        if (intervalRange.getMin() < maxTimeStamp) {
-          tempVal = null;
-          hasMoreRows = scanner.next(results);
-          for (Cell kv : results) {
+        tempVal = null;
+        hasMoreRows = scanner.next(results);
+        for (Cell kv : results) {
+          if (intervalRange.getMin() < maxTimeStamp) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
+            else timestamp =
+                getTimestampFromOffset(getSecondsTimestampFromRowKey(kv, request) * 1000l,
+                  Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(kv.getTimestamp())) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
@@ -572,8 +592,8 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
                 new AbstractMap.SimpleEntry<Long, Pair<S, S>>(kvCountVal, new Pair<S, S>(sumVal,
                     sumSqVal)));
             }
-          }
-        } else break;
+          } else break;
+        }
       } while (hasMoreRows);
       if (!stds.isEmpty()) {
         TimeseriesAggregateResponse.Builder responseBuilder =
@@ -597,8 +617,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
 
           mapEntryBuilder.setKey(entry.getKey().getMin());
           mapEntryBuilder.setValue(responsePair.build());
-          responseBuilder.addEntry(mapEntryBuilder.build()).build();
+          responseBuilder.addEntry(mapEntryBuilder.build());
         }
+        response = responseBuilder.build();
       }
     } catch (IOException e) {
       ResponseConverter.setControllerException(controller, e);
@@ -649,14 +670,16 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       boolean hasMoreRows = false;
 
       do {
-        if (intervalRange.getMin() < maxTimeStamp) {
-          tempVal = null;
-          tempWeight = null;
-          hasMoreRows = scanner.next(results);
-          for (Cell kv : results) {
+        tempVal = null;
+        tempWeight = null;
+        hasMoreRows = scanner.next(results);
+        for (Cell kv : results) {
+          if (intervalRange.getMin() < maxTimeStamp) {
             long timestamp = 0;
             if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp = getTimestampFromOffset(getTimestampFromRowKey(kv, request) * 1000, Bytes.toInt(kv.getQualifier()));
+            else timestamp =
+                getTimestampFromOffset(getSecondsTimestampFromRowKey(kv, request) * 1000l,
+                  Bytes.toInt(kv.getQualifier()));
             if (!intervalRange.withinTimeRange(timestamp)) {
               intervalRange =
                   new TimeRange(intervalRange.getMax(), intervalRange.getMax()
@@ -665,8 +688,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
               tempWeight = null;
               sumVal = null;
               sumWeights = null;
-            }
-            if (intervalRange.withinTimeRange(timestamp)) {
+            } else if (intervalRange.withinTimeRange(timestamp)) {
               tempVal =
                   ci.add(tempVal, ci.castToReturnType(ci.getValue(colFamily, valQualifier, kv)));
               if (weightQualifier != null) {
@@ -676,11 +698,11 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
               }
               sumVal = ci.add(sumVal, tempVal);
               sumWeights = ci.add(sumWeights, tempWeight);
-              medians.put(new TimeRange(intervalRange.getMin(), intervalRange.getMax()),
-                new Pair<S, S>(sumVal, tempVal));
+              if (tempWeight != null) medians.put(new TimeRange(intervalRange.getMin(),
+                  intervalRange.getMax()), new Pair<S, S>(sumVal, tempVal));
             }
-          }
-        } else break;
+          } else break;
+        }
       } while (hasMoreRows);
       if (!medians.isEmpty()) {
         TimeseriesAggregateResponse.Builder responseBuilder =
@@ -703,8 +725,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
 
           mapEntryBuilder.setKey(entry.getKey().getMin());
           mapEntryBuilder.setValue(responsePair.build());
-          responseBuilder.addEntry(mapEntryBuilder.build()).build();
+          responseBuilder.addEntry(mapEntryBuilder.build());
         }
+        response = responseBuilder.build();
       }
     } catch (IOException e) {
       ResponseConverter.setControllerException(controller, e);
