@@ -157,7 +157,6 @@ public class TestTimeseriesAggregateProtocol {
    */
   @Test(timeout = 300000)
   public void testMaxWithValidRange() throws Throwable {
-    HTable t = new HTable(conf, TEST_TABLE);
     int TIME_LIMIT =
         (int) ((new GregorianCalendar(2014, 10, 10, 2, 0, 0).getTime().getTime()) / 1000);
     TimeseriesAggregationClient aClient =
@@ -168,8 +167,54 @@ public class TestTimeseriesAggregateProtocol {
     // scan.setStopRow(STOP_ROW);
     final ColumnInterpreter<Long, Long, EmptyMsg, LongMsg, LongMsg> ci =
         new LongColumnInterpreter();
+    Map<Long, Long> results = new ConcurrentSkipListMap<>();
+    results.put(1415574000000l,24l);
+    results.put(1415574900000l, 49l);
+    results.put(1415575800000l, 74l);
+    results.put(1415576700000l, 99l);
+    results.put(1415577600000l, 24l);
+    results.put(1415578500000l, 49l);
+    results.put(1415579400000l, 74l);
+    results.put(1415580300000l, 99l);
+    results.put(1415581200000l, 0l);
+    
     ConcurrentSkipListMap<Long, Long> maximum = aClient.max(TEST_TABLE, ci, scan);
-    assertEquals(99, maximum);
+    assertEquals(results, maximum);
+  }
+  
+  /**
+   * ***************Test cases for Minimum *******************
+   */
+
+  /**
+   * give max for the entire table.
+   * @throws Throwable
+   */
+  @Test(timeout = 300000)
+  public void testMinWithValidRange() throws Throwable {
+    int TIME_LIMIT =
+        (int) ((new GregorianCalendar(2014, 10, 10, 2, 0, 0).getTime().getTime()) / 1000);
+    TimeseriesAggregationClient aClient =
+        new TimeseriesAggregationClient(conf, 900, TIME_BASELINE, TIME_LIMIT, KEY_FILTER_PATTERN);
+    Scan scan = new Scan();
+    scan.addFamily(TEST_FAMILY);
+    // scan.setStartRow(START_ROW);
+    // scan.setStopRow(STOP_ROW);
+    final ColumnInterpreter<Long, Long, EmptyMsg, LongMsg, LongMsg> ci =
+        new LongColumnInterpreter();
+    Map<Long, Long> results = new ConcurrentSkipListMap<>();
+    results.put(1415574000000l,0l);
+    results.put(1415574900000l, 25l);
+    results.put(1415575800000l, 50l);
+    results.put(1415576700000l, 75l);
+    results.put(1415577600000l, 0l);
+    results.put(1415578500000l, 25l);
+    results.put(1415579400000l, 50l);
+    results.put(1415580300000l, 75l);
+    results.put(1415581200000l, 0l);
+    
+    ConcurrentSkipListMap<Long, Long> minimum = aClient.min(TEST_TABLE, ci, scan);
+    assertEquals(results, minimum);
   }
 
 }

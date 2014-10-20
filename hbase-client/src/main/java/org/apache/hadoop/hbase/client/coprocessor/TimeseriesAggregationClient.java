@@ -184,10 +184,7 @@ public class TimeseriesAggregationClient {
           if (controller.failedOnException()) {
             throw controller.getFailedOn();
           }
-          // if (response.getEntryCount() > 0) {
           return response;
-          // }
-          // return null;
         }
       }, aMaxCallBack);
     return aMaxCallBack.getMax();
@@ -235,10 +232,10 @@ public class TimeseriesAggregationClient {
     final TimeseriesAggregateRequest requestArg =
         validateArgAndGetPB(scan, ci, false, intervalSeconds, timestampSecondsMin,
           timestampSecondsMax, keyFilterPattern);
-    class MaxCallBack implements Batch.Callback<TimeseriesAggregateResponse> {
+    class MinCallBack implements Batch.Callback<TimeseriesAggregateResponse> {
       ConcurrentSkipListMap<Long, R> min = new ConcurrentSkipListMap<>();
 
-      ConcurrentSkipListMap<Long, R> getMax() {
+      ConcurrentSkipListMap<Long, R> getMin() {
         return min;
       }
 
@@ -273,7 +270,7 @@ public class TimeseriesAggregationClient {
       }
     }
 
-    MaxCallBack aMaxCallBack = new MaxCallBack();
+    MinCallBack aMinCallBack = new MinCallBack();
     table.coprocessorService(TimeseriesAggregateService.class, scan.getStartRow(),
       scan.getStopRow(), new Batch.Call<TimeseriesAggregateService, TimeseriesAggregateResponse>() {
         @Override
@@ -282,18 +279,15 @@ public class TimeseriesAggregationClient {
           ServerRpcController controller = new ServerRpcController();
           BlockingRpcCallback<TimeseriesAggregateResponse> rpcCallback =
               new BlockingRpcCallback<TimeseriesAggregateResponse>();
-          instance.getMax(controller, requestArg, rpcCallback);
+          instance.getMin(controller, requestArg, rpcCallback);
           TimeseriesAggregateResponse response = rpcCallback.get();
           if (controller.failedOnException()) {
             throw controller.getFailedOn();
           }
-          if (response.getEntryCount() > 0) {
             return response;
-          }
-          return null;
         }
-      }, aMaxCallBack);
-    return aMaxCallBack.getMax();
+      }, aMinCallBack);
+    return aMinCallBack.getMin();
   }
 
   /**

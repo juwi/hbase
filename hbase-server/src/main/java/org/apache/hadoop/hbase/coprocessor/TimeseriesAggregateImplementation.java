@@ -147,12 +147,8 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       scanner = env.getRegion().getScanner(scan);
       List<Cell> results = new ArrayList<Cell>();
       byte[] colFamily = scan.getFamilies()[0];
-      NavigableSet<byte[]> qualifiers = scan.getFamilyMap().get(colFamily);
       byte[] qualifier = null;
       long maxTimeStamp = getMaxTimeStamp(scan, request);
-      if (qualifiers != null && !qualifiers.isEmpty()) {
-        qualifier = qualifiers.pollFirst();
-      }
       // qualifier can be null.
       boolean hasMoreRows = false;
       do {
@@ -269,12 +265,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       scanner = env.getRegion().getScanner(scan);
       List<Cell> results = new ArrayList<Cell>();
       byte[] colFamily = scan.getFamilies()[0];
-      NavigableSet<byte[]> qualifiers = scan.getFamilyMap().get(colFamily);
       byte[] qualifier = null;
       long maxTimeStamp = getMaxTimeStamp(scan, request);
-      if (qualifiers != null && !qualifiers.isEmpty()) {
-        qualifier = qualifiers.pollFirst();
-      }
+
       boolean hasMoreRows = false;
       do {
         hasMoreRows = scanner.next(results);
@@ -290,9 +283,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
               min = null;
             }
             if (intervalRange.withinTimeRange(timestamp)) {
-              temp = ci.getValue(colFamily, qualifier, kv);
+              temp = ci.getValue(colFamily, kv.getQualifier(), kv);
               min = (min == null || (temp != null && ci.compare(temp, min) < 0)) ? temp : min;
-              if (ci.compare(minimums.get(intervalRange), min) > 0) {
+              if (ci.compare(min, minimums.get(intervalRange)) > 0) {
                 minimums.put(new TimeRange(intervalRange.getMin(), intervalRange.getMax()), min);
               }
             }
