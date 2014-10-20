@@ -86,11 +86,11 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
     }
     return null;
   }
-  
+
   private TimeRange getNextTimeRange(TimeRange timeRange, int interval) throws IOException {
-    long intervalMillis = interval *1000;
+    long intervalMillis = interval * 1000;
     return new TimeRange(timeRange.getMax(), timeRange.getMax() + intervalMillis);
-    
+
   }
 
   private long getTimestampFromOffset(long currentTimeStamp, int offset) {
@@ -248,7 +248,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
     TimeRange intervalRange = null;
     T min = null;
     boolean hasScannerRange = false;
-    Map<TimeRange, T> minimums = new HashMap<TimeRange, T>();
+    Map<Long, T> minimums = new HashMap<Long, T>();
 
     if (!request.hasRange()) {
       hasScannerRange = true; // When no timerange is being passed in via
@@ -286,7 +286,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
               temp = ci.getValue(colFamily, kv.getQualifier(), kv);
               min = (min == null || (temp != null && ci.compare(temp, min) < 0)) ? temp : min;
               if (ci.compare(min, minimums.get(intervalRange)) > 0) {
-                minimums.put(new TimeRange(intervalRange.getMin(), intervalRange.getMax()), min);
+                minimums.put(intervalRange.getMin(), min);
               }
             }
           } else break;
@@ -297,7 +297,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
         TimeseriesAggregateResponse.Builder responseBuilder =
             TimeseriesAggregateResponse.newBuilder();
 
-        for (Map.Entry<TimeRange, T> entry : minimums.entrySet()) {
+        for (Map.Entry<Long, T> entry : minimums.entrySet()) {
           TimeseriesAggregateResponseEntry responseElement = null;
           TimeseriesAggregateResponseMapEntry mapEntry = null;
           TimeseriesAggregateResponseEntry.Builder valueBuilder =
@@ -307,7 +307,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
 
           valueBuilder.addFirstPart(ci.getProtoForCellType(entry.getValue()).toByteString());
 
-          mapElementBuilder.setKey(entry.getKey().getMin());
+          mapElementBuilder.setKey(entry.getKey());
           mapElementBuilder.setValue(valueBuilder.build());
 
           responseBuilder.addEntry(mapElementBuilder.build());
@@ -335,7 +335,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
     TimeseriesAggregateResponse response = null;
     TimeRange intervalRange = null;
     InternalScanner scanner = null;
-    Map<TimeRange, S> sums = new HashMap<TimeRange, S>();
+    Map<Long, S> sums = new HashMap<Long, S>();
     long sum = 0l;
     boolean hasScannerRange = false;
 
@@ -355,11 +355,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       scanner = env.getRegion().getScanner(scan);
       byte[] colFamily = scan.getFamilies()[0];
       NavigableSet<byte[]> qualifiers = scan.getFamilyMap().get(colFamily);
-      byte[] qualifier = null;
       long maxTimeStamp = getMaxTimeStamp(scan, request);
-      if (qualifiers != null && !qualifiers.isEmpty()) {
-        qualifier = qualifiers.pollFirst();
-      }
       List<Cell> results = new ArrayList<Cell>();
       boolean hasMoreRows = false;
       do {
@@ -376,9 +372,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
               sumVal = null;
             }
             if (intervalRange.withinTimeRange(timestamp)) {
-              temp = ci.getValue(colFamily, qualifier, kv);
+              temp = ci.getValue(colFamily, kv.getQualifier(), kv);
               if (temp != null) sumVal = ci.add(sumVal, ci.castToReturnType(temp));
-              sums.put(new TimeRange(intervalRange.getMin(), intervalRange.getMax()), sumVal);
+              sums.put(intervalRange.getMin(), sumVal);
             }
           } else break;
         }
@@ -388,7 +384,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
         TimeseriesAggregateResponse.Builder responseBuilder =
             TimeseriesAggregateResponse.newBuilder();
 
-        for (Map.Entry<TimeRange, S> entry : sums.entrySet()) {
+        for (Map.Entry<Long, S> entry : sums.entrySet()) {
 
           TimeseriesAggregateResponseEntry responseElement = null;
           TimeseriesAggregateResponseMapEntry mapEntry = null;
@@ -399,7 +395,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
 
           valueBuilder.addFirstPart(ci.getProtoForPromotedType(entry.getValue()).toByteString());
 
-          mapElementBuilder.setKey(entry.getKey().getMin());
+          mapElementBuilder.setKey(entry.getKey());
           mapElementBuilder.setValue(valueBuilder.build());
           responseBuilder.addEntry(mapElementBuilder.build());
         }
@@ -432,7 +428,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
     TimeseriesAggregateResponse response = null;
     TimeRange intervalRange = null;
     InternalScanner scanner = null;
-    Map<TimeRange, SimpleEntry<Long, S>> averages = new HashMap<TimeRange, SimpleEntry<Long, S>>();
+    Map<Long, SimpleEntry<Long, S>> averages = new HashMap<Long, SimpleEntry<Long, S>>();
     boolean hasScannerRange = false;
 
     if (!request.hasRange()) {
@@ -451,12 +447,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       intervalRange = getInitialTimeRange(request, scan);
       scanner = env.getRegion().getScanner(scan);
       byte[] colFamily = scan.getFamilies()[0];
-      NavigableSet<byte[]> qualifiers = scan.getFamilyMap().get(colFamily);
       byte[] qualifier = null;
       long maxTimeStamp = getMaxTimeStamp(scan, request);
-      if (qualifiers != null && !qualifiers.isEmpty()) {
-        qualifier = qualifiers.pollFirst();
-      }
+
       List<Cell> results = new ArrayList<Cell>();
       boolean hasMoreRows = false;
 
@@ -477,10 +470,10 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
             }
             if (intervalRange.withinTimeRange(timestamp)) {
               kvCountVal++;
-              temp = ci.getValue(colFamily, qualifier, kv);
+              temp = ci.getValue(colFamily, kv.getQualifier(), kv);
               if (temp != null) sumVal = ci.add(sumVal, ci.castToReturnType(temp));
-              averages.put(new TimeRange(intervalRange.getMin(), intervalRange.getMax()),
-                new AbstractMap.SimpleEntry<Long, S>(kvCountVal, sumVal));
+              averages.put(intervalRange.getMin(), new AbstractMap.SimpleEntry<Long, S>(kvCountVal,
+                  sumVal));
             }
           } else break;
         }
@@ -489,7 +482,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
         TimeseriesAggregateResponse.Builder responseBuilder =
             TimeseriesAggregateResponse.newBuilder();
 
-        for (Entry<TimeRange, SimpleEntry<Long, S>> entry : averages.entrySet()) {
+        for (Entry<Long, SimpleEntry<Long, S>> entry : averages.entrySet()) {
           TimeseriesAggregateResponseEntry responseElement = null;
           TimeseriesAggregateResponseMapEntry mapEntry = null;
           TimeseriesAggregateResponseEntry.Builder valueBuilder =
@@ -503,7 +496,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
           bb.rewind();
           valueBuilder.setSecondPart(ByteString.copyFrom(bb));
 
-          mapElementBuilder.setKey(entry.getKey().getMin());
+          mapElementBuilder.setKey(entry.getKey());
           mapElementBuilder.setValue(valueBuilder.build());
           responseBuilder.addEntry(mapElementBuilder.build());
         }
@@ -546,12 +539,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       intervalRange = getInitialTimeRange(request, scan);
       scanner = env.getRegion().getScanner(scan);
       byte[] colFamily = scan.getFamilies()[0];
-      NavigableSet<byte[]> qualifiers = scan.getFamilyMap().get(colFamily);
-      byte[] qualifier = null;
       long maxTimeStamp = getMaxTimeStamp(scan, request);
-      if (qualifiers != null && !qualifiers.isEmpty()) {
-        qualifier = qualifiers.pollFirst();
-      }
       List<Cell> results = new ArrayList<Cell>();
 
       boolean hasMoreRows = false;
@@ -575,7 +563,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
             }
             if (intervalRange.withinTimeRange(timestamp)) {
               kvCountVal++;
-              tempVal = ci.add(tempVal, ci.castToReturnType(ci.getValue(colFamily, qualifier, kv)));
+              tempVal =
+                  ci.add(tempVal,
+                    ci.castToReturnType(ci.getValue(colFamily, kv.getQualifier(), kv)));
               sumVal = ci.add(sumVal, tempVal);
               sumSqVal = ci.add(sumSqVal, ci.multiply(tempVal, tempVal));
               stds.put(new TimeRange(intervalRange.getMin(), intervalRange.getMax()),

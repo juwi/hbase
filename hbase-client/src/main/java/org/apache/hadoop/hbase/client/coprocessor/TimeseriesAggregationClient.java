@@ -332,7 +332,7 @@ public class TimeseriesAggregationClient {
     final TimeseriesAggregateRequest requestArg =
         validateArgAndGetPB(scan, ci, false, intervalSeconds, timestampSecondsMin,
           timestampSecondsMax, keyFilterPattern);
-    class MaxCallBack implements Batch.Callback<TimeseriesAggregateResponse> {
+    class SumCallBack implements Batch.Callback<TimeseriesAggregateResponse> {
       ConcurrentSkipListMap<Long, S> sum = new ConcurrentSkipListMap<>();
 
       ConcurrentSkipListMap<Long, S> getMax() {
@@ -377,7 +377,7 @@ public class TimeseriesAggregationClient {
       }
     }
 
-    MaxCallBack aMaxCallBack = new MaxCallBack();
+    SumCallBack aSumCallBack = new SumCallBack();
     table.coprocessorService(TimeseriesAggregateService.class, scan.getStartRow(),
       scan.getStopRow(), new Batch.Call<TimeseriesAggregateService, TimeseriesAggregateResponse>() {
         @Override
@@ -386,7 +386,7 @@ public class TimeseriesAggregationClient {
           ServerRpcController controller = new ServerRpcController();
           BlockingRpcCallback<TimeseriesAggregateResponse> rpcCallback =
               new BlockingRpcCallback<TimeseriesAggregateResponse>();
-          instance.getMax(controller, requestArg, rpcCallback);
+          instance.getSum(controller, requestArg, rpcCallback);
           TimeseriesAggregateResponse response = rpcCallback.get();
           if (controller.failedOnException()) {
             throw controller.getFailedOn();
@@ -396,8 +396,8 @@ public class TimeseriesAggregationClient {
           // }
           // return null;
         }
-      }, aMaxCallBack);
-    return aMaxCallBack.getMax();
+      }, aSumCallBack);
+    return aSumCallBack.getMax();
   }
 
   /**
