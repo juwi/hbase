@@ -98,6 +98,19 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
     return currentTimeStamp + offsetMicro;
   }
 
+  private List<TimeRange> getAllTimeRanges(Scan scan, TimeseriesAggregateRequest request)
+      throws IOException {
+    List<TimeRange> timeRanges = new ArrayList<TimeRange>();
+    Long max = getMaxTimeStamp(scan, request);
+    TimeRange next = getInitialTimeRange(request, scan);
+    timeRanges.add(next);
+    do {
+      next = getNextTimeRange(next, request.getTimeIntervalSeconds());
+      timeRanges.add(next);
+    } while (next.getMax() <= max);
+    return timeRanges;
+  }
+
   private int getSecondsTimestampFromRowKey(Cell kv, TimeseriesAggregateRequest request) {
     String keyPattern = request.getRange().getKeyTimestampFilterPattern();
     byte[] rowKey = CellUtil.cloneRow(kv);
@@ -132,7 +145,6 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       RpcCallback<TimeseriesAggregateResponse> done) {
     InternalScanner scanner = null;
     TimeseriesAggregateResponse response = null;
-    TimeRange intervalRange = null;
     T max = null;
     boolean hasScannerRange = false;
     Map<Long, T> maximums = new HashMap<Long, T>();
@@ -148,35 +160,32 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       ColumnInterpreter<T, S, P, Q, R> ci = constructColumnInterpreterFromRequest(request);
       T temp;
       Scan scan = ProtobufUtil.toScan(request.getScan());
-      intervalRange = getInitialTimeRange(request, scan);
       scanner = env.getRegion().getScanner(scan);
+      List<TimeRange> timeRanges = getAllTimeRanges(scan, request);
       List<Cell> results = new ArrayList<Cell>();
       byte[] colFamily = scan.getFamilies()[0];
-      long maxTimeStamp = getMaxTimeStamp(scan, request);
-      // qualifier can be null.
       boolean hasMoreRows = false;
       do {
         results.clear();
         hasMoreRows = scanner.next(results);
         for (Cell kv : results) {
-          if (intervalRange.getMin() < maxTimeStamp) {
-            long timestamp = 0;
-            if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp =
-                getMillisTimestampFromOffset(getTimestampFromRowKeyAsMillis(kv, request),
-                  Bytes.toInt(kv.getQualifier()));
-            if (!intervalRange.withinTimeRange(timestamp)) {
-              intervalRange = getNextTimeRange(intervalRange, request.getTimeIntervalSeconds());
-              max = null;
-            }
-            if (intervalRange.withinTimeRange(timestamp)) {
+          // if (intervalRange.getMin() < maxTimeStamp) {
+          long timestamp = 0;
+          if (hasScannerRange) timestamp = kv.getTimestamp();
+          else timestamp =
+              getMillisTimestampFromOffset(getTimestampFromRowKeyAsMillis(kv, request),
+                Bytes.toInt(kv.getQualifier()));
+          for (TimeRange t : timeRanges) {
+            if (t.withinTimeRange(timestamp)) {
+              long minTimestamp = t.getMin();
+              if (maximums.containsKey(minTimestamp)) {
+                max = maximums.get(minTimestamp);
+              } else max = null;
               temp = ci.getValue(colFamily, kv.getQualifier(), kv);
               max = (max == null || (temp != null && ci.compare(temp, max) > 0)) ? temp : max;
-              if (ci.compare(maximums.get(intervalRange), max) < 0) {
-                maximums.put(intervalRange.getMin(), max);
-              }
+              maximums.put(minTimestamp, max);
             }
-          } else break;
+          }
         }
       } while (hasMoreRows);
       if (!maximums.isEmpty()) {
@@ -208,7 +217,8 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
         }
       }
     }
-    log.info("Maximum from this region is " + env.getRegion().getRegionNameAsString() + ": " + max);
+    log.info("Maximums from this region are " + env.getRegion().getRegionNameAsString() + ": "
+        + maximums.toString());
     done.run(response);
   }
 
@@ -245,11 +255,10 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       RpcCallback<TimeseriesAggregateResponse> done) {
     InternalScanner scanner = null;
     TimeseriesAggregateResponse response = null;
-    TimeRange intervalRange = null;
+    // TimeRange intervalRange = null;
     T min = null;
     boolean hasScannerRange = false;
     Map<Long, T> minimums = new HashMap<Long, T>();
-
     if (!request.hasRange()) {
       hasScannerRange = true; // When no timerange is being passed in via
       // the request, it is
@@ -261,38 +270,35 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       ColumnInterpreter<T, S, P, Q, R> ci = constructColumnInterpreterFromRequest(request);
       T temp;
       Scan scan = ProtobufUtil.toScan(request.getScan());
-      intervalRange = getInitialTimeRange(request, scan);
+      List<TimeRange> timeRanges = getAllTimeRanges(scan, request);
       scanner = env.getRegion().getScanner(scan);
       List<Cell> results = new ArrayList<Cell>();
       byte[] colFamily = scan.getFamilies()[0];
-      long maxTimeStamp = getMaxTimeStamp(scan, request);
 
       boolean hasMoreRows = false;
       do {
         results.clear();
         hasMoreRows = scanner.next(results);
         for (Cell kv : results) {
-          if (intervalRange.getMin() < maxTimeStamp) {
-            long timestamp = 0;
-            if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp =
-                getMillisTimestampFromOffset(getTimestampFromRowKeyAsMillis(kv, request),
-                  Bytes.toInt(kv.getQualifier()));
-            if (!intervalRange.withinTimeRange(timestamp)) {
-              intervalRange = getNextTimeRange(intervalRange, request.getTimeIntervalSeconds());
-              min = null;
-            }
-            if (intervalRange.withinTimeRange(timestamp)) {
+          long timestamp = 0;
+          if (hasScannerRange) timestamp = kv.getTimestamp();
+          else timestamp =
+              getMillisTimestampFromOffset(getTimestampFromRowKeyAsMillis(kv, request),
+                Bytes.toInt(kv.getQualifier()));
+          for (TimeRange t : timeRanges) {
+            if (t.withinTimeRange(timestamp)) {
+              long minTimestamp = t.getMin();
+              if (minimums.containsKey(minTimestamp)) {
+                min = minimums.get(minTimestamp);
+              } else min = null;
               temp = ci.getValue(colFamily, kv.getQualifier(), kv);
               min = (min == null || (temp != null && ci.compare(temp, min) < 0)) ? temp : min;
-              if (ci.compare(min, minimums.get(intervalRange)) > 0) {
-                minimums.put(intervalRange.getMin(), min);
-              }
+              minimums.put(minTimestamp, min);
             }
-          } else break;
+          }
         }
       } while (hasMoreRows);
-      if (minimums != null) {
+      if (!minimums.isEmpty()) {
         TimeseriesAggregateResponse.Builder responseBuilder =
             TimeseriesAggregateResponse.newBuilder();
 
@@ -321,19 +327,17 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
         }
       }
     }
-    log.info("Minimum from this region is " + env.getRegion().getRegionNameAsString() + ": " + min);
+    log.info("Minimums from this region are " + env.getRegion().getRegionNameAsString() + ": "
+        + minimums.toString());
     done.run(response);
-
   }
 
   @Override
   public void getSum(RpcController controller, TimeseriesAggregateRequest request,
       RpcCallback<TimeseriesAggregateResponse> done) {
     TimeseriesAggregateResponse response = null;
-    TimeRange intervalRange = null;
     InternalScanner scanner = null;
     Map<Long, S> sums = new HashMap<Long, S>();
-    long sum = 0l;
     boolean hasScannerRange = false;
 
     if (!request.hasRange()) {
@@ -348,32 +352,31 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       S sumVal = null;
       T temp;
       Scan scan = ProtobufUtil.toScan(request.getScan());
-      intervalRange = getInitialTimeRange(request, scan);
+      List<TimeRange> timeRanges = getAllTimeRanges(scan, request);
       scanner = env.getRegion().getScanner(scan);
       byte[] colFamily = scan.getFamilies()[0];
-      long maxTimeStamp = getMaxTimeStamp(scan, request);
       List<Cell> results = new ArrayList<Cell>();
       boolean hasMoreRows = false;
       do {
         results.clear();
         hasMoreRows = scanner.next(results);
         for (Cell kv : results) {
-          if (intervalRange.getMin() < maxTimeStamp) {
-            long timestamp = 0;
-            if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp =
-                getMillisTimestampFromOffset(getTimestampFromRowKeyAsMillis(kv, request),
-                  Bytes.toInt(kv.getQualifier()));
-            if (!intervalRange.withinTimeRange(timestamp)) {
-              intervalRange = getNextTimeRange(intervalRange, request.getTimeIntervalSeconds());
-              sumVal = null;
-            }
-            if (intervalRange.withinTimeRange(timestamp)) {
+          long timestamp = 0;
+          if (hasScannerRange) timestamp = kv.getTimestamp();
+          else timestamp =
+              getMillisTimestampFromOffset(getTimestampFromRowKeyAsMillis(kv, request),
+                Bytes.toInt(kv.getQualifier()));
+          for (TimeRange t : timeRanges) {
+            if (t.withinTimeRange(timestamp)) {
+              long minTimestamp = t.getMin();
+              if (sums.containsKey(minTimestamp)) {
+                sumVal = sums.get(minTimestamp);
+              } else sumVal = null;
               temp = ci.getValue(colFamily, kv.getQualifier(), kv);
               if (temp != null) sumVal = ci.add(sumVal, ci.castToReturnType(temp));
-              sums.put(intervalRange.getMin(), sumVal);
+              sums.put(minTimestamp, sumVal);
             }
-          } else break;
+          }
         }
       } while (hasMoreRows);
       if (!sums.isEmpty()) {
@@ -385,9 +388,7 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
               TimeseriesAggregateResponseEntry.newBuilder();
           TimeseriesAggregateResponseMapEntry.Builder mapElementBuilder =
               TimeseriesAggregateResponseMapEntry.newBuilder();
-
           valueBuilder.addFirstPart(ci.getProtoForPromotedType(entry.getValue()).toByteString());
-
           mapElementBuilder.setKey(entry.getKey());
           mapElementBuilder.setValue(valueBuilder.build());
           responseBuilder.addEntry(mapElementBuilder.build());
@@ -404,22 +405,15 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
         }
       }
     }
-    log.debug("Sum from this region is " + env.getRegion().getRegionNameAsString() + ": " + sum);
+    log.info("Sums from this region are " + env.getRegion().getRegionNameAsString() + ": "
+        + sums.toString());
     done.run(response);
-  }
-
-  @Override
-  public void getRowNum(RpcController controller, TimeseriesAggregateRequest request,
-      RpcCallback<TimeseriesAggregateResponse> done) {
-    // TODO Implement TimeseriesAggregateService.getRowNum
-
   }
 
   @Override
   public void getAvg(RpcController controller, TimeseriesAggregateRequest request,
       RpcCallback<TimeseriesAggregateResponse> done) {
     TimeseriesAggregateResponse response = null;
-    TimeRange intervalRange = null;
     InternalScanner scanner = null;
     Map<Long, SimpleEntry<Long, S>> averages = new HashMap<Long, SimpleEntry<Long, S>>();
     boolean hasScannerRange = false;
@@ -437,10 +431,9 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
       T temp;
       Long kvCountVal = 0l;
       Scan scan = ProtobufUtil.toScan(request.getScan());
-      intervalRange = getInitialTimeRange(request, scan);
       scanner = env.getRegion().getScanner(scan);
+      List<TimeRange> timeRanges = getAllTimeRanges(scan, request);
       byte[] colFamily = scan.getFamilies()[0];
-      long maxTimeStamp = getMaxTimeStamp(scan, request);
 
       List<Cell> results = new ArrayList<Cell>();
       boolean hasMoreRows = false;
@@ -449,25 +442,29 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
         results.clear();
         hasMoreRows = scanner.next(results);
         for (Cell kv : results) {
-          if (intervalRange.getMin() < maxTimeStamp) {
-            long timestamp = 0;
-            if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp =
-                getMillisTimestampFromOffset(getTimestampFromRowKeyAsMillis(kv, request),
-                  Bytes.toInt(kv.getQualifier()));
-            if (!intervalRange.withinTimeRange(timestamp)) {
-              intervalRange = getNextTimeRange(intervalRange, request.getTimeIntervalSeconds());
-              kvCountVal = 0l;
-              sumVal = null;
-            }
-            if (intervalRange.withinTimeRange(timestamp)) {
-              kvCountVal++;
+          long timestamp = 0;
+          if (hasScannerRange) timestamp = kv.getTimestamp();
+          else timestamp =
+              getMillisTimestampFromOffset(getTimestampFromRowKeyAsMillis(kv, request),
+                Bytes.toInt(kv.getQualifier()));
+          for (TimeRange t : timeRanges) {
+            if (t.withinTimeRange(timestamp)) {
+              long minTimestamp = t.getMin();
+              if (averages.containsKey(minTimestamp)) {
+                sumVal = averages.get(minTimestamp).getValue();
+                kvCountVal = averages.get(minTimestamp).getKey();
+              } else {
+                sumVal = null;
+                kvCountVal = 0l;
+              }
               temp = ci.getValue(colFamily, kv.getQualifier(), kv);
-              if (temp != null) sumVal = ci.add(sumVal, ci.castToReturnType(temp));
-              averages.put(intervalRange.getMin(), new AbstractMap.SimpleEntry<Long, S>(kvCountVal,
-                  sumVal));
+              if (temp != null) {
+                kvCountVal++;
+                sumVal = ci.add(sumVal, ci.castToReturnType(temp));
+                averages.put(t.getMin(), new AbstractMap.SimpleEntry<Long, S>(kvCountVal, sumVal));
+              }
             }
-          } else break;
+          }
         }
       } while (hasMoreRows);
       if (!averages.isEmpty()) {
@@ -479,13 +476,11 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
               TimeseriesAggregateResponseEntry.newBuilder();
           TimeseriesAggregateResponseMapEntry.Builder mapElementBuilder =
               TimeseriesAggregateResponseMapEntry.newBuilder();
-
           ByteString first = ci.getProtoForPromotedType(entry.getValue().getValue()).toByteString();
           valueBuilder.addFirstPart(first);
           ByteBuffer bb = ByteBuffer.allocate(8).putLong(entry.getValue().getKey());
           bb.rewind();
           valueBuilder.setSecondPart(ByteString.copyFrom(bb));
-
           mapElementBuilder.setKey(entry.getKey());
           mapElementBuilder.setValue(valueBuilder.build());
           responseBuilder.addEntry(mapElementBuilder.build());
@@ -502,208 +497,8 @@ public class TimeseriesAggregateImplementation<T, S, P extends Message, Q extend
         }
       }
     }
-    done.run(response);
-  }
-
-  @Override
-  public void getStd(RpcController controller, TimeseriesAggregateRequest request,
-      RpcCallback<TimeseriesAggregateResponse> done) {
-    TimeseriesAggregateResponse response = null;
-    TimeRange intervalRange = null;
-    InternalScanner scanner = null;
-    Map<Long, SimpleEntry<Long, Pair<S, S>>> stds =
-        new HashMap<Long, SimpleEntry<Long, Pair<S, S>>>();
-    boolean hasScannerRange = false;
-
-    if (!request.hasRange()) {
-      hasScannerRange = true; // When no timerange is being passed in via
-      // the request, it is
-      // assumed, that the scanner is
-      // timestamp-range bound
-    }
-    try {
-      ColumnInterpreter<T, S, P, Q, R> ci = constructColumnInterpreterFromRequest(request);
-      S sumVal = null, sumSqVal = null, tempVal = null;
-      long kvCountVal = 0l;
-      Scan scan = ProtobufUtil.toScan(request.getScan());
-      intervalRange = getInitialTimeRange(request, scan);
-      scanner = env.getRegion().getScanner(scan);
-      byte[] colFamily = scan.getFamilies()[0];
-      long maxTimeStamp = getMaxTimeStamp(scan, request);
-      List<Cell> results = new ArrayList<Cell>();
-
-      boolean hasMoreRows = false;
-
-      do {
-        results.clear();
-        hasMoreRows = scanner.next(results);
-        for (Cell kv : results) {
-          if (intervalRange.getMin() < maxTimeStamp) {
-            long timestamp = 0;
-            if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp =
-                getMillisTimestampFromOffset(getTimestampFromRowKeyAsMillis(kv, request),
-                  Bytes.toInt(kv.getQualifier()));
-            if (!intervalRange.withinTimeRange(timestamp)) {
-              intervalRange = getNextTimeRange(intervalRange, request.getTimeIntervalSeconds());
-              kvCountVal = 0l;
-              sumVal = null;
-              sumSqVal = null;
-              tempVal = null;
-            }
-            if (intervalRange.withinTimeRange(timestamp)) {
-              kvCountVal++;
-              sumVal =
-                  ci.add(sumVal, ci.castToReturnType(ci.getValue(colFamily, kv.getQualifier(), kv)));
-              sumSqVal = ci.add(sumSqVal, ci.multiply(sumVal, sumVal));
-              stds.put(intervalRange.getMin(), new AbstractMap.SimpleEntry<Long, Pair<S, S>>(
-                  kvCountVal, new Pair<S, S>(sumVal, sumSqVal)));
-            }
-          } else break;
-        }
-      } while (hasMoreRows);
-      if (!stds.isEmpty()) {
-        TimeseriesAggregateResponse.Builder responseBuilder =
-            TimeseriesAggregateResponse.newBuilder();
-
-        for (Entry<Long, SimpleEntry<Long, Pair<S, S>>> entry : stds.entrySet()) {
-          TimeseriesAggregateResponseMapEntry.Builder mapEntryBuilder =
-              TimeseriesAggregateResponseMapEntry.newBuilder();
-
-          ByteString first_sumVal =
-              ci.getProtoForPromotedType(entry.getValue().getValue().getFirst()).toByteString();
-          ByteString first_sumSqVal =
-              ci.getProtoForPromotedType(entry.getValue().getValue().getSecond()).toByteString();
-          TimeseriesAggregateResponseEntry.Builder responsePair =
-              TimeseriesAggregateResponseEntry.newBuilder();
-          responsePair.addFirstPart(first_sumVal);
-          responsePair.addFirstPart(first_sumSqVal);
-          ByteBuffer bb = ByteBuffer.allocate(8).putLong(entry.getValue().getKey());
-          bb.rewind();
-          responsePair.setSecondPart(ByteString.copyFrom(bb));
-
-          mapEntryBuilder.setKey(entry.getKey());
-          mapEntryBuilder.setValue(responsePair.build());
-          responseBuilder.addEntry(mapEntryBuilder.build());
-        }
-        response = responseBuilder.build();
-      }
-    } catch (IOException e) {
-      ResponseConverter.setControllerException(controller, e);
-    } finally {
-      if (scanner != null) {
-        try {
-          scanner.close();
-        } catch (IOException ignored) {
-        }
-      }
-    }
-    done.run(response);
-  }
-
-  @Override
-  public void getMedian(RpcController controller, TimeseriesAggregateRequest request,
-      RpcCallback<TimeseriesAggregateResponse> done) {
-    TimeseriesAggregateResponse response = null;
-    TimeRange intervalRange = null;
-    InternalScanner scanner = null;
-    Map<TimeRange, Pair<S, S>> medians = new HashMap<TimeRange, Pair<S, S>>();
-    boolean hasScannerRange = false;
-
-    if (!request.hasRange()) {
-      hasScannerRange = true; // When no timerange is being passed in via
-      // the request, it is
-      // assumed, that the scanner is
-      // timestamp-range bound
-    }
-    try {
-      ColumnInterpreter<T, S, P, Q, R> ci = constructColumnInterpreterFromRequest(request);
-      S sumVal = null, sumWeights = null, tempVal = null, tempWeight = null;
-      Scan scan = ProtobufUtil.toScan(request.getScan());
-      intervalRange = getInitialTimeRange(request, scan);
-      scanner = env.getRegion().getScanner(scan);
-      byte[] colFamily = scan.getFamilies()[0];
-      NavigableSet<byte[]> qualifiers = scan.getFamilyMap().get(colFamily);
-      byte[] valQualifier = null, weightQualifier = null;
-      long maxTimeStamp = getMaxTimeStamp(scan, request);
-      if (qualifiers != null && !qualifiers.isEmpty()) {
-        valQualifier = qualifiers.pollFirst();
-        // if weighted median is requested, get qualifier for the weight
-        // column
-        weightQualifier = qualifiers.pollLast();
-      }
-      List<Cell> results = new ArrayList<Cell>();
-
-      boolean hasMoreRows = false;
-
-      do {
-        results.clear();
-        hasMoreRows = scanner.next(results);
-        for (Cell kv : results) {
-          if (intervalRange.getMin() < maxTimeStamp) {
-            long timestamp = 0;
-            if (hasScannerRange) timestamp = kv.getTimestamp();
-            else timestamp =
-                getMillisTimestampFromOffset(getTimestampFromRowKeyAsMillis(kv, request),
-                  Bytes.toInt(kv.getQualifier()));
-            if (!intervalRange.withinTimeRange(timestamp)) {
-              intervalRange = getNextTimeRange(intervalRange, request.getTimeIntervalSeconds());
-              tempVal = null;
-              tempWeight = null;
-              sumVal = null;
-              sumWeights = null;
-            }
-            if (intervalRange.withinTimeRange(timestamp)) {
-              tempVal =
-                  ci.add(tempVal, ci.castToReturnType(ci.getValue(colFamily, valQualifier, kv)));
-              if (weightQualifier != null) {
-                tempWeight =
-                    ci.add(tempWeight,
-                      ci.castToReturnType(ci.getValue(colFamily, weightQualifier, kv)));
-              }
-              sumVal = ci.add(sumVal, tempVal);
-              sumWeights = ci.add(sumWeights, tempWeight);
-              if (tempWeight != null) medians.put(new TimeRange(intervalRange.getMin(),
-                  intervalRange.getMax()), new Pair<S, S>(sumVal, tempVal));
-            }
-          } else break;
-        }
-      } while (hasMoreRows);
-      if (!medians.isEmpty()) {
-        TimeseriesAggregateResponse.Builder responseBuilder =
-            TimeseriesAggregateResponse.newBuilder();
-
-        for (Entry<TimeRange, Pair<S, S>> entry : medians.entrySet()) {
-          TimeseriesAggregateResponseMapEntry.Builder mapEntryBuilder =
-              TimeseriesAggregateResponseMapEntry.newBuilder();
-
-          ByteString first_sumVal =
-              ci.getProtoForPromotedType(entry.getValue().getFirst()).toByteString();
-          S s =
-              entry.getValue().getSecond() == null ? ci.castToReturnType(ci.getMinValue()) : entry
-                  .getValue().getSecond();
-          ByteString first_sumWeights = ci.getProtoForPromotedType(s).toByteString();
-          TimeseriesAggregateResponseEntry.Builder responsePair =
-              TimeseriesAggregateResponseEntry.newBuilder();
-          responsePair.addFirstPart(first_sumVal);
-          responsePair.addFirstPart(first_sumWeights);
-
-          mapEntryBuilder.setKey(entry.getKey().getMin());
-          mapEntryBuilder.setValue(responsePair.build());
-          responseBuilder.addEntry(mapEntryBuilder.build());
-        }
-        response = responseBuilder.build();
-      }
-    } catch (IOException e) {
-      ResponseConverter.setControllerException(controller, e);
-    } finally {
-      if (scanner != null) {
-        try {
-          scanner.close();
-        } catch (IOException ignored) {
-        }
-      }
-    }
+    log.info("Averages from this region are " + env.getRegion().getRegionNameAsString() + ": "
+        + averages.toString());
     done.run(response);
   }
 }

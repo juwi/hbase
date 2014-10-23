@@ -4075,33 +4075,9 @@ public final class TimeseriesAggregateProtos {
           com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done);
 
       /**
-       * <code>rpc GetRowNum(.TimeseriesAggregateRequest) returns (.TimeseriesAggregateResponse);</code>
-       */
-      public abstract void getRowNum(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-          com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done);
-
-      /**
        * <code>rpc GetAvg(.TimeseriesAggregateRequest) returns (.TimeseriesAggregateResponse);</code>
        */
       public abstract void getAvg(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-          com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done);
-
-      /**
-       * <code>rpc GetStd(.TimeseriesAggregateRequest) returns (.TimeseriesAggregateResponse);</code>
-       */
-      public abstract void getStd(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-          com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done);
-
-      /**
-       * <code>rpc GetMedian(.TimeseriesAggregateRequest) returns (.TimeseriesAggregateResponse);</code>
-       */
-      public abstract void getMedian(
           com.google.protobuf.RpcController controller,
           org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done);
@@ -4136,35 +4112,11 @@ public final class TimeseriesAggregateProtos {
         }
 
         @java.lang.Override
-        public  void getRowNum(
-            com.google.protobuf.RpcController controller,
-            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-            com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done) {
-          impl.getRowNum(controller, request, done);
-        }
-
-        @java.lang.Override
         public  void getAvg(
             com.google.protobuf.RpcController controller,
             org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
             com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done) {
           impl.getAvg(controller, request, done);
-        }
-
-        @java.lang.Override
-        public  void getStd(
-            com.google.protobuf.RpcController controller,
-            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-            com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done) {
-          impl.getStd(controller, request, done);
-        }
-
-        @java.lang.Override
-        public  void getMedian(
-            com.google.protobuf.RpcController controller,
-            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-            com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done) {
-          impl.getMedian(controller, request, done);
         }
 
       };
@@ -4196,13 +4148,7 @@ public final class TimeseriesAggregateProtos {
             case 2:
               return impl.getSum(controller, (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest)request);
             case 3:
-              return impl.getRowNum(controller, (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest)request);
-            case 4:
               return impl.getAvg(controller, (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest)request);
-            case 5:
-              return impl.getStd(controller, (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest)request);
-            case 6:
-              return impl.getMedian(controller, (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest)request);
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -4225,12 +4171,6 @@ public final class TimeseriesAggregateProtos {
               return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest.getDefaultInstance();
             case 3:
               return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest.getDefaultInstance();
-            case 4:
-              return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest.getDefaultInstance();
-            case 5:
-              return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest.getDefaultInstance();
-            case 6:
-              return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -4252,12 +4192,6 @@ public final class TimeseriesAggregateProtos {
             case 2:
               return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance();
             case 3:
-              return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance();
-            case 4:
-              return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance();
-            case 5:
-              return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance();
-            case 6:
               return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
@@ -4292,33 +4226,9 @@ public final class TimeseriesAggregateProtos {
         com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done);
 
     /**
-     * <code>rpc GetRowNum(.TimeseriesAggregateRequest) returns (.TimeseriesAggregateResponse);</code>
-     */
-    public abstract void getRowNum(
-        com.google.protobuf.RpcController controller,
-        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-        com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done);
-
-    /**
      * <code>rpc GetAvg(.TimeseriesAggregateRequest) returns (.TimeseriesAggregateResponse);</code>
      */
     public abstract void getAvg(
-        com.google.protobuf.RpcController controller,
-        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-        com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done);
-
-    /**
-     * <code>rpc GetStd(.TimeseriesAggregateRequest) returns (.TimeseriesAggregateResponse);</code>
-     */
-    public abstract void getStd(
-        com.google.protobuf.RpcController controller,
-        org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-        com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done);
-
-    /**
-     * <code>rpc GetMedian(.TimeseriesAggregateRequest) returns (.TimeseriesAggregateResponse);</code>
-     */
-    public abstract void getMedian(
         com.google.protobuf.RpcController controller,
         org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
         com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done);
@@ -4361,22 +4271,7 @@ public final class TimeseriesAggregateProtos {
               done));
           return;
         case 3:
-          this.getRowNum(controller, (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest)request,
-            com.google.protobuf.RpcUtil.<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse>specializeCallback(
-              done));
-          return;
-        case 4:
           this.getAvg(controller, (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest)request,
-            com.google.protobuf.RpcUtil.<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse>specializeCallback(
-              done));
-          return;
-        case 5:
-          this.getStd(controller, (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest)request,
-            com.google.protobuf.RpcUtil.<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse>specializeCallback(
-              done));
-          return;
-        case 6:
-          this.getMedian(controller, (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse>specializeCallback(
               done));
           return;
@@ -4402,12 +4297,6 @@ public final class TimeseriesAggregateProtos {
           return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest.getDefaultInstance();
         case 3:
           return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest.getDefaultInstance();
-        case 4:
-          return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest.getDefaultInstance();
-        case 5:
-          return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest.getDefaultInstance();
-        case 6:
-          return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -4429,12 +4318,6 @@ public final class TimeseriesAggregateProtos {
         case 2:
           return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance();
         case 3:
-          return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance();
-        case 4:
-          return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance();
-        case 5:
-          return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance();
-        case 6:
           return org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
@@ -4502,57 +4385,12 @@ public final class TimeseriesAggregateProtos {
             org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance()));
       }
 
-      public  void getRowNum(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-          com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done) {
-        channel.callMethod(
-          getDescriptor().getMethods().get(3),
-          controller,
-          request,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance(),
-          com.google.protobuf.RpcUtil.generalizeCallback(
-            done,
-            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.class,
-            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance()));
-      }
-
       public  void getAvg(
           com.google.protobuf.RpcController controller,
           org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(4),
-          controller,
-          request,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance(),
-          com.google.protobuf.RpcUtil.generalizeCallback(
-            done,
-            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.class,
-            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance()));
-      }
-
-      public  void getStd(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-          com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done) {
-        channel.callMethod(
-          getDescriptor().getMethods().get(5),
-          controller,
-          request,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance(),
-          com.google.protobuf.RpcUtil.generalizeCallback(
-            done,
-            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.class,
-            org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance()));
-      }
-
-      public  void getMedian(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request,
-          com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse> done) {
-        channel.callMethod(
-          getDescriptor().getMethods().get(6),
+          getDescriptor().getMethods().get(3),
           controller,
           request,
           org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance(),
@@ -4584,22 +4422,7 @@ public final class TimeseriesAggregateProtos {
           org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request)
           throws com.google.protobuf.ServiceException;
 
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse getRowNum(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request)
-          throws com.google.protobuf.ServiceException;
-
       public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse getAvg(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request)
-          throws com.google.protobuf.ServiceException;
-
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse getStd(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request)
-          throws com.google.protobuf.ServiceException;
-
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse getMedian(
           com.google.protobuf.RpcController controller,
           org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request)
           throws com.google.protobuf.ServiceException;
@@ -4648,48 +4471,12 @@ public final class TimeseriesAggregateProtos {
       }
 
 
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse getRowNum(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request)
-          throws com.google.protobuf.ServiceException {
-        return (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(3),
-          controller,
-          request,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance());
-      }
-
-
       public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse getAvg(
           com.google.protobuf.RpcController controller,
           org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(4),
-          controller,
-          request,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance());
-      }
-
-
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse getStd(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request)
-          throws com.google.protobuf.ServiceException {
-        return (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(5),
-          controller,
-          request,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance());
-      }
-
-
-      public org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse getMedian(
-          com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateRequest request)
-          throws com.google.protobuf.ServiceException {
-        return (org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(6),
+          getDescriptor().getMethods().get(3),
           controller,
           request,
           org.apache.hadoop.hbase.protobuf.generated.TimeseriesAggregateProtos.TimeseriesAggregateResponse.getDefaultInstance());
@@ -4749,21 +4536,16 @@ public final class TimeseriesAggregateProtos {
       "2!.TimeseriesAggregateResponseEntry\"R\n\033T" +
       "imeseriesAggregateResponse\0223\n\005entry\030\001 \003(" +
       "\0132$.TimeseriesAggregateResponseMapEntry2" +
-      "\205\004\n\032TimeseriesAggregateService\022C\n\006GetMax" +
+      "\260\002\n\032TimeseriesAggregateService\022C\n\006GetMax" +
       "\022\033.TimeseriesAggregateRequest\032\034.Timeseri" +
       "esAggregateResponse\022C\n\006GetMin\022\033.Timeseri" +
       "esAggregateRequest\032\034.TimeseriesAggregate" +
       "Response\022C\n\006GetSum\022\033.TimeseriesAggregate",
-      "Request\032\034.TimeseriesAggregateResponse\022F\n" +
-      "\tGetRowNum\022\033.TimeseriesAggregateRequest\032" +
-      "\034.TimeseriesAggregateResponse\022C\n\006GetAvg\022" +
-      "\033.TimeseriesAggregateRequest\032\034.Timeserie" +
-      "sAggregateResponse\022C\n\006GetStd\022\033.Timeserie" +
-      "sAggregateRequest\032\034.TimeseriesAggregateR" +
-      "esponse\022F\n\tGetMedian\022\033.TimeseriesAggrega" +
-      "teRequest\032\034.TimeseriesAggregateResponseB" +
-      "O\n*org.apache.hadoop.hbase.protobuf.gene" +
-      "ratedB\031TimeseriesAggregateProtosH\001\210\001\001\240\001\001"
+      "Request\032\034.TimeseriesAggregateResponse\022C\n" +
+      "\006GetAvg\022\033.TimeseriesAggregateRequest\032\034.T" +
+      "imeseriesAggregateResponseBO\n*org.apache" +
+      ".hadoop.hbase.protobuf.generatedB\031Timese" +
+      "riesAggregateProtosH\001\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
